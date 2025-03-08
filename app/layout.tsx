@@ -33,6 +33,10 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
+        <head>
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="theme-color" content="#1D4ED8" />
+        </head>
         <body className={`${inter.variable} ${nunito.variable} font-inter`}>
           <Providers>{children}</Providers>
           <Toaster />
