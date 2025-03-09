@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 import withPWA from "next-pwa";
 
+const isProd = process.env.NODE_ENV === "production";
+const baseUrl = isProd
+  ? "https://resume-ai-pwa.netlify.app/"
+  : "http://localhost:3000";
+
 const nextConfig = {};
 
 export default withPWA({
@@ -9,7 +14,7 @@ export default withPWA({
   skipWaiting: true,
   runtimeCaching: [
     {
-      urlPattern: /^https?:\/\/localhost:3000(\/|\/sign-in|\/sign-up)?$/,
+      urlPattern: new RegExp(`^${baseUrl}(\/|\/sign-in|\/sign-up)?$`),
       handler: "NetworkFirst",
       options: {
         cacheName: "pages",
