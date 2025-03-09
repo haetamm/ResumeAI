@@ -9,7 +9,7 @@ export default withPWA({
   skipWaiting: true,
   runtimeCaching: [
     {
-      urlPattern: ({ request }) => request.destination === "document",
+      urlPattern: /^https?:\/\/localhost:3000(\/|\/sign-in|\/sign-up)?$/,
       handler: "NetworkFirst",
       options: {
         cacheName: "pages",
