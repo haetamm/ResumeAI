@@ -1,11 +1,8 @@
-import FinalResumeView from "@/components/layout/ResumeView";
-import React from "react";
-import { Metadata } from "next";
-import {
-  checkResumeOwnership,
-  fetchResume,
-} from "@/lib/actions/resume.actions";
+import ClientResume from "@/components/layout/my-resume/ClientResume";
+import { fetchResume } from "@/lib/actions/resume.actions";
+import { FormProvider } from "@/lib/context/FormProvider";
 import { currentUser } from "@clerk/nextjs/server";
+import { Metadata } from "next";
 
 export async function generateMetadata({
   params,
@@ -15,7 +12,7 @@ export async function generateMetadata({
   const data = await fetchResume(params.id);
   const resume = JSON.parse(data || "{}");
 
-  if (resume?.firstName === undefined && resume?.lastName === undefined) {
+  if (!resume?.firstName && !resume?.lastName) {
     return {
       title: "ResumeAI - Professional AI Resume Builder",
       description:
@@ -24,17 +21,30 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${resume?.firstName}${resume?.firstName && " "}
-    ${resume?.lastName}${resume?.lastName && " "}- ResumeAI`,
-    description: `${resume?.firstName} ${resume?.lastName}'s Resume. Powered by ResumeAI.`,
+    title: `${resume.firstName ?? ""} ${resume.lastName ?? ""} - ResumeAI`,
+    description: `${resume.firstName ?? ""} ${
+      resume.lastName ?? ""
+    }'s Resume. Powered by ResumeAI.`,
   };
 }
 
 const MyResume = async ({ params }: { params: { id: string } }) => {
-  const user = await currentUser();
-  const isResumeOwner = await checkResumeOwnership(user?.id || "", params.id);
+  let userId = null;
 
-  return <FinalResumeView params={params} isOwnerView={isResumeOwner} />;
+  try {
+    const user = await currentUser();
+    userId = user ? JSON.parse(JSON.stringify(user.id)) : null;
+  } catch (error) {
+    console.warn("Failed to fetch current user. Offline mode?", error);
+  }
+
+  return (
+    <>
+      <FormProvider params={params}>
+        <ClientResume params={params} serverUserId={userId} />;
+      </FormProvider>
+    </>
+  );
 };
 
 export default MyResume;

@@ -8,6 +8,7 @@ import {
   useContext,
 } from "react";
 import { fetchResume } from "../actions/resume.actions";
+import { getFromDB } from "../indexedDB";
 
 interface FormContextType {
   formData: any;
@@ -15,6 +16,13 @@ interface FormContextType {
   activeFormIndex: number;
   setActiveFormIndex: (index: number) => void;
 }
+
+// Fungsi untuk mengambil resume dari IndexedDB berdasarkan resumeId
+const getResumeByIdFromDB = async (resumeId: string) => {
+  const resumeData = (await getFromDB("resumes")) || "[]"; // Ambil dari IndexedDB
+  const resumes = JSON.parse(resumeData);
+  return resumes.find((resume: any) => resume.resumeId === resumeId) || null;
+};
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
@@ -31,10 +39,38 @@ export const FormProvider = ({
   useEffect(() => {
     const loadResumeData = async () => {
       try {
+        // Coba ambil dari server terlebih dahulu
         const resumeData = await fetchResume(params.id);
-        setFormData(JSON.parse(resumeData));
+
+        if (resumeData) {
+          // Parse data dari fetchResume (langsung satu objek)
+          const resume = JSON.parse(resumeData);
+          setFormData(resume);
+        } else {
+          // Jika offline atau fetch gagal, ambil dari IndexedDB
+          const offlineResume = await getResumeByIdFromDB(params.id);
+          if (offlineResume) {
+            setFormData(offlineResume);
+          } else {
+            console.error(
+              "Resume tidak ditemukan di IndexedDB untuk resumeId:",
+              params.id
+            );
+          }
+        }
       } catch (error) {
         console.error("Error fetching resume:", error);
+
+        // Fallback ke IndexedDB jika ada error
+        const offlineResume = await getResumeByIdFromDB(params.id);
+        if (offlineResume) {
+          setFormData(offlineResume);
+        } else {
+          console.error(
+            "Resume tidak ditemukan di IndexedDB untuk resumeId:",
+            params.id
+          );
+        }
       }
     };
 

@@ -1,13 +1,44 @@
 "use client";
 
 import Header from "@/components/layout/Header";
+import { getFromDB } from "@/lib/indexedDB";
 import { useUser } from "@clerk/nextjs";
 import { ArrowBigUp, AtomIcon, Edit, Share2 } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const page = () => {
-  const user = useUser();
+const Page = () => {
+  const { user } = useUser();
+  const isOffline = typeof window !== "undefined" && !navigator.onLine;
+  const [cachedUser, setCachedUser] = useState(user);
+
+  useEffect(() => {
+    if (isOffline) {
+      getFromDB("userId").then((data) => {
+        if (data) setCachedUser(data);
+      });
+    } else {
+      setCachedUser(user);
+    }
+  }, [isOffline, user]);
+
+  const dataCard = [
+    {
+      icon: <AtomIcon className="h-8 w-8" />,
+      title: "Create Your Template",
+      desc: "Start by selecting the color scheme for your resume template...",
+    },
+    {
+      icon: <Edit className="h-8 w-8" />,
+      title: "Update Your Information",
+      desc: "Enter your personal details, work experience, education, and skills...",
+    },
+    {
+      icon: <Share2 className="h-8 w-8" />,
+      title: "Share Your Resume",
+      desc: "After completing your resume, save it securely and generate a shareable link...",
+    },
+  ];
 
   return (
     <div>
@@ -15,14 +46,15 @@ const page = () => {
       <section>
         <div className="py-8 px-6 mx-auto max-w-screen-xl text-center lg:py-16 lg:px-12 md:px-10">
           <h1 className="mt-4 lg:mt-8 mb-4 text-4xl font-extrabold tracking-tight leading-none text-black md:text-5xl lg:text-6xl">
-            Build Your Resume <span className="text-primary-700 max-sm:block">With AI</span>
+            Build Your Resume{" "}
+            <span className="text-primary-700 max-sm:block">With AI</span>
           </h1>
           <p className="mb-8 text-lg font-normal text-gray-700 lg:text-xl sm:px-16 xl:px-48">
             Effortlessly Craft a Professional Resume with Our AI-Powered Builder
           </p>
           <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
             <Link
-              href={`${!user?.isSignedIn ? "/sign-up" : "/dashboard"}`}
+              href={cachedUser ? "/dashboard" : "/sign-up"}
               className="relative flex h-11 w-full items-center justify-center px-6 before:absolute before:inset-0 before:rounded-full before:bg-primary-700 before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
             >
               <span className="relative text-base font-semibold text-white">
@@ -40,6 +72,7 @@ const page = () => {
           </div>
         </div>
       </section>
+
       <section className="py-8 px-6 mx-auto max-w-screen-xl text-center lg:py-8 lg:px-12 md:px-10">
         <h2 className="font-bold text-3xl" id="learn-more">
           How it Works?
@@ -47,50 +80,21 @@ const page = () => {
         <h2 className="text-md text-gray-500">
           Generate resume in just 3 steps
         </h2>
-
         <div className="mt-8 grid grid-cols-1 gap-8 text-center md:text-start md:grid-cols-2 lg:grid-cols-3 md:px-24">
-          <div className="flex flex-col cursor-pointer p-8 border border-gray-100 rounded-3xl bg-white shadow-xl max-md:shadow-md shadow-gray-600/10 hover:shadow-gray-600/15 transition-shadow duration-300 items-center md:items-start justify-center md:justify-start">
-            <AtomIcon className="h-8 w-8" />
-
-            <h2 className="mt-4 text-xl font-bold text-black">
-              Create Your Template
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-600 md:text-justify">
-              Start by selecting the color scheme for your resume template. Our
-              single, professionally designed template ensures a clean and
-              consistent look for all users.
-            </p>
-          </div>
-
-          <div className="flex flex-col cursor-pointer p-8 border border-gray-100 rounded-3xl bg-white shadow-xl max-md:shadow-md shadow-gray-600/10 hover:shadow-gray-600/15 transition-shadow duration-300 items-center md:items-start justify-center md:justify-start">
-            <Edit className="h-8 w-8" />
-
-            <h2 className="mt-4 text-xl font-bold text-black">
-              Update Your Information
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-600 md:text-justify">
-              Enter your personal details, work experience, education, and
-              skills into the provided form. Our AI assists you in filling out
-              each section accurately and effectively.
-            </p>
-          </div>
-
-          <div className="flex flex-col cursor-pointer p-8 border border-gray-100 rounded-3xl bg-white shadow-xl max-md:shadow-md shadow-gray-600/10 hover:shadow-gray-600/15 transition-shadow duration-300 items-center md:items-start justify-center md:justify-start">
-            <Share2 className="h-8 w-8" />
-
-            <h2 className="mt-4 text-xl font-bold text-black">
-              Share Your Resume
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-600 md:text-justify">
-              After completing your resume, save it securely and generate a
-              shareable link. Easily update your information anytime and share
-              the link with potential employers or download it in a preferred
-              format.
-            </p>
-          </div>
+          {dataCard.map((item, index) => (
+            <div
+              key={index}
+              className="flex flex-col cursor-pointer p-8 border border-gray-100 rounded-3xl bg-white shadow-xl max-md:shadow-md shadow-gray-600/10 hover:shadow-gray-600/15 transition-shadow duration-300 items-center md:items-start justify-center md:justify-start"
+            >
+              {item.icon}
+              <h2 className="mt-4 text-xl font-bold text-black">
+                {item.title}
+              </h2>
+              <p className="mt-1 text-sm text-gray-600 md:text-justify">
+                {item.desc}
+              </p>
+            </div>
+          ))}
         </div>
 
         <div className="mt-20 text-center">
@@ -99,12 +103,12 @@ const page = () => {
             className="inline-block rounded-full bg-primary-700 px-12 py-3 text-sm font-medium text-white transition hover:bg-primary-800 focus:outline-none focus:ring focus:ring-primary-400"
           >
             <div className="flex items-center justify-center">
-              <ArrowBigUp className="h-6 w-6 mr-2" />
-              Get Started Today
+              <ArrowBigUp className="h-6 w-6 mr-2" /> Get Started Today
             </div>
           </Link>
         </div>
       </section>
+
       <footer className="backdrop-blur-md w-full">
         <div className="w-full mx-auto text-center max-w-screen-xl p-4 flex max-md:flex-col md:items-center md:justify-between">
           <span className="text-sm text-gray-500 sm:text-center">
@@ -125,4 +129,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

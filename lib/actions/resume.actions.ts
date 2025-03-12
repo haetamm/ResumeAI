@@ -1,6 +1,5 @@
 "use server";
 
-import { useUser } from "@clerk/nextjs";
 import Education from "../models/education.model";
 import Experience from "../models/experience.model";
 import Resume from "../models/resume.model";
@@ -57,16 +56,14 @@ export async function fetchResume(resumeId: string) {
   }
 }
 
-export async function fetchUserResumes(userId: string) {
+export async function fetchUserResumes(userId: string): Promise<string> {
   if (userId === "") {
-    return [];
+    return "[]";
   }
 
   try {
     await connectToDB();
-
     const resumes = await Resume.find({ userId: userId });
-
     return JSON.stringify(resumes);
   } catch (error: any) {
     throw new Error(`Failed to fetch user resumes: ${error.message}`);
@@ -215,10 +212,7 @@ export async function addEducationToResume(
   }
 }
 
-export async function addSkillToResume(
-  resumeId: string,
-  skillDataArray: any
-) {
+export async function addSkillToResume(resumeId: string, skillDataArray: any) {
   try {
     const resume = await Resume.findOne({ resumeId: resumeId });
 

@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "@/components/common/ProgressBarProvider";
 import "./globals.css";
+import OnlineStatusProvider from "@/lib/context/OnlineStatusProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
@@ -38,6 +39,7 @@ export default function RootLayout({
           <meta name="theme-color" content="#1D4ED8" />
         </head>
         <body className={`${inter.variable} ${nunito.variable} font-inter`}>
+          <OnlineStatusProvider />
           <Providers>{children}</Providers>
           <Toaster />
         </body>
