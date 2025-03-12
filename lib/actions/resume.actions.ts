@@ -60,10 +60,12 @@ export async function fetchUserResumes(userId: string): Promise<string> {
   if (userId === "") {
     return "[]";
   }
-
   try {
     await connectToDB();
-    const resumes = await Resume.find({ userId: userId });
+    const resumes = await Resume.find({ userId: userId })
+      .populate("experience")
+      .populate("education")
+      .populate("skills");
     return JSON.stringify(resumes);
   } catch (error: any) {
     throw new Error(`Failed to fetch user resumes: ${error.message}`);
