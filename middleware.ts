@@ -12,10 +12,11 @@ export default clerkMiddleware((auth, request) => {
   );
 
   const isOffline = cookies.get("is-offline") === "true";
+  const isToken = cookies.get("token");
   console.log("isOffline from cookies:", isOffline);
 
   if (isProtectedRoute(request)) {
-    if (!isOffline) {
+    if (!isOffline || !isToken) {
       console.log("User is online, applying Clerk auth");
       auth().protect();
     } else {

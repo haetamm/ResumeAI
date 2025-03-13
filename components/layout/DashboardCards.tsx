@@ -6,6 +6,7 @@ import { fetchUserResumes } from "@/lib/actions/resume.actions";
 import { useUser } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import { getFromDB, saveToDB } from "@/lib/indexedDB";
+import Cookies from "js-cookie";
 
 const DashboardCards = () => {
   const { user, isSignedIn, isLoaded } = useUser();
@@ -17,6 +18,7 @@ const DashboardCards = () => {
     const initializeUserId = async () => {
       if (isSignedIn && clerkUserId) {
         await saveToDB("userId", clerkUserId);
+        Cookies.set("token", "true");
         setStoredUserId(clerkUserId);
       } else if (!navigator.onLine) {
         const cachedUserId = await getFromDB("userId");
@@ -57,10 +59,6 @@ const DashboardCards = () => {
     }
   }, [isLoaded, storedUserId, isSignedIn, clerkUserId]);
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 mt-10 gap-8">
       <AddResume userId={storedUserId || clerkUserId || ""} />
@@ -69,14 +67,14 @@ const DashboardCards = () => {
             <ResumeCard
               key={resume.resumeId}
               resume={JSON.stringify(resume)}
-              refreshResumes={loadResumeData} // Gunakan langsung tanpa arrow function
+              refreshResumes={loadResumeData}
             />
           ))
         : [1, 2, 3].map((index) => (
             <ResumeCard
               key={index}
               resume={null}
-              refreshResumes={loadResumeData} // Gunakan langsung tanpa arrow function
+              refreshResumes={loadResumeData}
             />
           ))}
     </div>

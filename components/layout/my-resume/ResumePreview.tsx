@@ -11,7 +11,7 @@ import { themeColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 const ResumePreview = () => {
-  const { formData, setActiveFormIndex } = useFormContext();
+  const { formData, setActiveFormIndex, loading } = useFormContext();
   const pathname = usePathname();
 
   const isEditMode = pathname.endsWith("/edit");
@@ -47,7 +47,7 @@ const ResumePreview = () => {
     },
   ];
 
-  if (Object.keys(formData || {}).length === 0) {
+  if (Object.keys(formData || {}).length === 0 || loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="w-[210mm] min-h-[297mm] rounded-sm shadow-lg skeleton" />

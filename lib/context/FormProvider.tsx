@@ -1,28 +1,15 @@
 "use client";
 
-import {
-  ReactNode,
-  useEffect,
-  useState,
-  createContext,
-  useContext,
-} from "react";
-import { fetchResume } from "../actions/resume.actions";
-import { getFromDB } from "../indexedDB";
+import { ReactNode, useState, createContext, useContext } from "react";
+import useFetchResume from "../hooks/UseFetchResumes";
 
 interface FormContextType {
   formData: any;
   handleInputChange: (e: { target: { name: string; value: any } }) => void;
   activeFormIndex: number;
   setActiveFormIndex: (index: number) => void;
+  loading: boolean;
 }
-
-// Fungsi untuk mengambil resume dari IndexedDB berdasarkan resumeId
-const getResumeByIdFromDB = async (resumeId: string) => {
-  const resumeData = (await getFromDB("resumes")) || "[]"; // Ambil dari IndexedDB
-  const resumes = JSON.parse(resumeData);
-  return resumes.find((resume: any) => resume.resumeId === resumeId) || null;
-};
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
@@ -33,49 +20,8 @@ export const FormProvider = ({
   params: { id: string };
   children: ReactNode;
 }) => {
-  const [formData, setFormData] = useState<any>({});
+  const { formData, setFormData, loading } = useFetchResume(params.id);
   const [activeFormIndex, setActiveFormIndex] = useState(1);
-
-  useEffect(() => {
-    const loadResumeData = async () => {
-      try {
-        // Coba ambil dari server terlebih dahulu
-        const resumeData = await fetchResume(params.id);
-
-        if (resumeData) {
-          // Parse data dari fetchResume (langsung satu objek)
-          const resume = JSON.parse(resumeData);
-          setFormData(resume);
-        } else {
-          // Jika offline atau fetch gagal, ambil dari IndexedDB
-          const offlineResume = await getResumeByIdFromDB(params.id);
-          if (offlineResume) {
-            setFormData(offlineResume);
-          } else {
-            console.error(
-              "Resume tidak ditemukan di IndexedDB untuk resumeId:",
-              params.id
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching resume:", error);
-
-        // Fallback ke IndexedDB jika ada error
-        const offlineResume = await getResumeByIdFromDB(params.id);
-        if (offlineResume) {
-          setFormData(offlineResume);
-        } else {
-          console.error(
-            "Resume tidak ditemukan di IndexedDB untuk resumeId:",
-            params.id
-          );
-        }
-      }
-    };
-
-    loadResumeData();
-  }, [params.id]);
 
   const handleInputChange = (e: { target: { name: string; value: any } }) => {
     const { name, value } = e.target;
@@ -90,6 +36,7 @@ export const FormProvider = ({
     handleInputChange,
     activeFormIndex,
     setActiveFormIndex,
+    loading,
   };
 
   return (

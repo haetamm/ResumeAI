@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Serif, Inter, Nunito } from "next/font/google";
+import { Inter, Nunito } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "@/components/common/ProgressBarProvider";
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      afterSignOutUrl="/"
+      afterSignOutUrl="/sign-out"
       appearance={{
         layout: {
           socialButtonsPlacement: "bottom",

@@ -40,3 +40,24 @@ export const getFromDB = async (key: string) => {
     request.onerror = () => reject(request.error);
   });
 };
+
+export const clearIndexedDB = () => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.deleteDatabase(DB_NAME);
+
+    request.onsuccess = () => {
+      console.log("IndexedDB ResumeDB berhasil dihapus");
+      resolve(true);
+    };
+
+    request.onerror = (event) => {
+      console.error("Gagal hapus IndexedDB:", event);
+      reject(event);
+    };
+
+    request.onblocked = () => {
+      console.warn("Penghapusan diblok karena ada koneksi terbuka");
+      reject("Blocked");
+    };
+  });
+};
