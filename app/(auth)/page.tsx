@@ -8,19 +8,21 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 const Page = () => {
-  const { user } = useUser();
-  const isOffline = typeof window !== "undefined" && !navigator.onLine;
-  const [cachedUser, setCachedUser] = useState(user);
+  const { user, isSignedIn } = useUser();
+  const [cachedUser, setCachedUser] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOffline) {
-      getFromDB("userId").then((data) => {
-        if (data) setCachedUser(data);
-      });
+    const loadCached = async () => {
+      const userId = await getFromDB("userId");
+      setCachedUser(userId);
+    };
+
+    if (!user) {
+      loadCached();
     } else {
-      setCachedUser(user);
+      setCachedUser(user.id);
     }
-  }, [isOffline, user]);
+  }, [user, isSignedIn]);
 
   const dataCard = [
     {
@@ -58,7 +60,7 @@ const Page = () => {
               className="relative flex h-11 w-full items-center justify-center px-6 before:absolute before:inset-0 before:rounded-full before:bg-primary-700 before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
             >
               <span className="relative text-base font-semibold text-white">
-                Get Started
+                {cachedUser ? "Dashboard" : "Get Started"}
               </span>
             </Link>
             <Link

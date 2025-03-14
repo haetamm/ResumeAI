@@ -14,44 +14,57 @@ import { updateResume } from "@/lib/actions/resume.actions";
 import { useToast } from "../ui/use-toast";
 
 const ThemeColor = ({ params }: { params: { id: string } }) => {
+  const isOffline = typeof window !== "undefined" && !navigator.onLine;
   const { toast } = useToast();
   const { formData, handleInputChange } = useFormContext();
   const [selectedColor, setSelectedColor] = useState(themeColors[0]);
 
   useEffect(() => {
-    setSelectedColor(formData.themeColor);
-  }, [formData.themeColor]);
+    setSelectedColor(formData?.themeColor);
+  }, [formData?.themeColor]);
 
   const onColorSelect = async (color: any) => {
-    setSelectedColor(color);
-
-    handleInputChange({
-      target: {
-        name: "themeColor",
-        value: color,
-      },
-    });
-
-    const result = await updateResume({
-      resumeId: params.id,
-      updates: {
-        themeColor: color,
-      },
-    });
-
-    if (result.success) {
+    if (isOffline) {
       toast({
-        title: "Information saved.",
-        description: "Theme color updated successfully.",
-        className: "bg-white",
-      });
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
+        title: "Disconect",
+        description: isOffline
+          ? "You are offline. Please connect to the internet"
+          : "User not authenticated. Please log in.",
         variant: "destructive",
         className: "bg-white",
       });
+      return;
+    } else {
+      setSelectedColor(color);
+
+      handleInputChange({
+        target: {
+          name: "themeColor",
+          value: color,
+        },
+      });
+
+      const result = await updateResume({
+        resumeId: params.id,
+        updates: {
+          themeColor: color,
+        },
+      });
+
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Theme color updated successfully.",
+          className: "bg-white",
+        });
+      } else {
+        toast({
+          title: "Uh Oh! Something went wrong.",
+          description: result?.error,
+          variant: "destructive",
+          className: "bg-white",
+        });
+      }
     }
   };
 

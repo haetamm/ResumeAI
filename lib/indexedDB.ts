@@ -41,23 +41,30 @@ export const getFromDB = async (key: string) => {
   });
 };
 
-export const clearIndexedDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.deleteDatabase(DB_NAME);
+export const clearIndexedDB = async () => {
+  try {
+    const db = await initDB(); // Buka koneksi DB
 
-    request.onsuccess = () => {
-      console.log("IndexedDB ResumeDB berhasil dihapus");
-      resolve(true);
-    };
+    return new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, "readwrite");
+      const store = transaction.objectStore(STORE_NAME);
 
-    request.onerror = (event) => {
-      console.error("Gagal hapus IndexedDB:", event);
-      reject(event);
-    };
+      // Hapus hanya data dengan key "resumes" dan "userId"
+      store.delete("resumes");
+      store.delete("userId");
 
-    request.onblocked = () => {
-      console.warn("Penghapusan diblok karena ada koneksi terbuka");
-      reject("Blocked");
-    };
-  });
+      transaction.oncomplete = () => {
+        console.log("Data resumes dan userId berhasil dihapus dari IndexedDB");
+        resolve();
+      };
+
+      transaction.onerror = () => {
+        console.error("Gagal menghapus data IndexedDB:", transaction.error);
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.error("Error membuka IndexedDB:", error);
+    throw error;
+  }
 };

@@ -26,3 +26,8 @@ export const themeColors = [
 export const stripHtml = (html: string): string => {
   return html.replace(/<[^>]*>/g, "").trim();
 };
+
+const now = new Date();
+export const token = `process.env.NEXT_PUBLIC_SIGNOUT_TOKEN${now.getFullYear()}-${
+  now.getMonth() + 1
+}-${now.getDate()}`;

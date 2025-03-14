@@ -45,7 +45,7 @@ const DashboardCards = () => {
       const parsedResumes = JSON.parse(resumeData);
       setResumeList(parsedResumes);
 
-      if (navigator.onLine) {
+      if (navigator.onLine || !resumeList) {
         await saveToDB(`resumes`, resumeData);
       }
     } catch (error) {

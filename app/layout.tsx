@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "@/components/common/ProgressBarProvider";
 import "./globals.css";
 import OnlineStatusProvider from "@/lib/context/OnlineStatusProvider";
+import { token } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
@@ -25,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      afterSignOutUrl="/sign-out"
+      afterSignOutUrl={`/sign-out?token=${token}`}
       appearance={{
         layout: {
           socialButtonsPlacement: "bottom",

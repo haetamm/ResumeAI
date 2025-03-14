@@ -28,8 +28,10 @@ import {
 import { createResume } from "@/lib/actions/resume.actions";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next-nprogress-bar";
+import { useUser } from "@clerk/nextjs";
 
 const AddResume = ({ userId }: { userId: string | undefined }) => {
+  const isOffline = typeof window !== "undefined" && !navigator.onLine;
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,31 +51,43 @@ const AddResume = ({ userId }: { userId: string | undefined }) => {
       return;
     }
 
-    setIsLoading(true);
-
-    const uuid = uuidv4();
-
-    const result = await createResume({
-      resumeId: uuid,
-      userId: userId,
-      title: values.name,
-    });
-
-    if (result.success) {
-      form.reset();
-
-      const resume = JSON.parse(result.data!);
-
-      router.push(`/my-resume/${resume.resumeId}/edit`);
-    } else {
-      setIsLoading(false);
-
+    if (isOffline) {
       toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
+        title: "Disconect",
+        description: isOffline
+          ? "You are offline. Please connect to the internet to create a resume."
+          : "User not authenticated. Please log in.",
         variant: "destructive",
         className: "bg-white",
       });
+      return;
+    } else {
+      setIsLoading(true);
+
+      try {
+        const uuid = uuidv4();
+        const result = await createResume({
+          resumeId: uuid,
+          userId: userId,
+          title: values.name,
+        });
+
+        if (result.success) {
+          form.reset();
+          const resume = JSON.parse(result.data!);
+          router.push(`/my-resume/${resume.resumeId}/edit`);
+        }
+      } catch (error) {
+        console.log("kontol??");
+        toast({
+          title: "Uh Oh! Something went wrong.",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+          className: "bg-white",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -81,7 +95,9 @@ const AddResume = ({ userId }: { userId: string | undefined }) => {
     <>
       <div
         className="relative aspect-[1/1.2] border border-dashed border-slate-300 flex items-center justify-center bg-slate-100 rounded-xl hover:scale-105 hover:shadow-md transition-all cursor-pointer"
-        onClick={() => userId && setOpenDialog(true)}
+        onClick={() => {
+          setOpenDialog(true);
+        }}
       >
         <PlusSquare className="text-slate-500" />
       </div>
@@ -91,7 +107,7 @@ const AddResume = ({ userId }: { userId: string | undefined }) => {
           <DialogHeader>
             <DialogTitle>Create New Resume</DialogTitle>
             <DialogDescription>
-              Enter the title of your resume here. Click create when you're
+              Enter the title of your resume here. Click create when you&apos;re
               done.
             </DialogDescription>
           </DialogHeader>
@@ -140,7 +156,7 @@ const AddResume = ({ userId }: { userId: string | undefined }) => {
                 </button>
                 <Button
                   type="submit"
-                  disabled={isLoading || !form.formState.isValid}
+                  disabled={isLoading || !form.formState.isValid || !userId}
                 >
                   {isLoading ? (
                     <>
