@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useState, createContext, useContext } from "react";
-import useFetchResume from "../hooks/useFetchResumes";
+import useFetchResume from "../hooks/useFetchResume";
 
 interface FormContextType {
   formData: any;
