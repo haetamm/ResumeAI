@@ -26,15 +26,16 @@ import {
   FormMessage,
 } from "../ui/form";
 import { createResume } from "@/lib/actions/resume.actions";
-import { toast } from "../ui/use-toast";
 import { useRouter } from "next-nprogress-bar";
-import { useUser } from "@clerk/nextjs";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 
 const AddResume = ({ userId }: { userId: string | undefined }) => {
-  const isOffline = typeof window !== "undefined" && !navigator.onLine;
   const router = useRouter();
   const [openDialog, setOpenDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const form = useForm({
     resolver: zodResolver(ResumeNameValidationSchema),
@@ -47,47 +48,28 @@ const AddResume = ({ userId }: { userId: string | undefined }) => {
   const onSubmit = async (
     values: z.infer<typeof ResumeNameValidationSchema>
   ) => {
-    if (userId === undefined) {
-      return;
-    }
+    if (userId === undefined) return;
 
-    if (isOffline) {
-      toast({
-        title: "Disconect",
-        description: isOffline
-          ? "You are offline. Please connect to the internet to create a resume."
-          : "User not authenticated. Please log in.",
-        variant: "destructive",
-        className: "bg-white",
+    if (checkOffline("to create a resume.")) return;
+
+    setIsLoading(true);
+    try {
+      const uuid = uuidv4();
+      const result = await createResume({
+        resumeId: uuid,
+        userId: userId,
+        title: values.name,
       });
-      return;
-    } else {
-      setIsLoading(true);
 
-      try {
-        const uuid = uuidv4();
-        const result = await createResume({
-          resumeId: uuid,
-          userId: userId,
-          title: values.name,
-        });
-
-        if (result.success) {
-          form.reset();
-          const resume = JSON.parse(result.data!);
-          router.push(`/my-resume/${resume.resumeId}/edit`);
-        }
-      } catch (error) {
-        console.log("kontol??");
-        toast({
-          title: "Uh Oh! Something went wrong.",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-          className: "bg-white",
-        });
-      } finally {
-        setIsLoading(false);
+      if (result.success) {
+        form.reset();
+        const resume = JSON.parse(result.data!);
+        router.push(`/my-resume/${resume.resumeId}/edit`);
       }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

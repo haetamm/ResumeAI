@@ -6,8 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -19,13 +17,14 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Loader2, MoreVertical } from "lucide-react";
 import { useRouter } from "next-nprogress-bar";
 import { deleteResume } from "@/lib/actions/resume.actions";
 import { useToast } from "../ui/use-toast";
 import { usePathname } from "next/navigation";
+import { useHandleError } from "@/lib/hooks/useHandleError";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
 
 const ResumeCard = ({
   resume,
@@ -51,30 +50,29 @@ const ResumeCard = ({
   const [openAlert, setOpenAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const onDelete = async () => {
+    if (checkOffline()) return;
+
     setIsLoading(true);
+    try {
+      const result = await deleteResume(myResume.resumeId, pathname);
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Resume deleted successfully.",
+          className: "bg-white",
+        });
 
-    const result = await deleteResume(myResume.resumeId, pathname);
-
-    setIsLoading(false);
-    setOpenAlert(false);
-
-    if (result.success) {
-      toast({
-        title: "Information saved.",
-        description: "Resume deleted successfully.",
-        className: "bg-white",
-      });
-
-      refreshResumes();
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
-        variant: "destructive",
-        className: "bg-white",
-      });
+        refreshResumes();
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
+      setOpenAlert(false);
     }
   };
 

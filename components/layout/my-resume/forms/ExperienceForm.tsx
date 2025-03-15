@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/form";
 import { ExperienceValidationSchema } from "@/lib/validations/resume";
 import { experienceFields } from "@/lib/fields";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 
 const ExperienceForm = ({ params }: { params: { id: string } }) => {
   const listRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,8 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
   );
   const [currentAiIndex, setCurrentAiIndex] = useState(0);
   const { toast } = useToast();
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const form = useForm<z.infer<typeof ExperienceValidationSchema>>({
     resolver: zodResolver(ExperienceValidationSchema),
@@ -112,6 +116,7 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
   };
 
   const generateExperienceDescriptionFromAI = async (index: number) => {
+    if (checkOffline()) return;
     const experience = form.getValues("experience")[index];
     if (!experience.title || !experience.companyName) {
       toast({
@@ -142,30 +147,30 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
   };
 
   const onSave = async (data: z.infer<typeof ExperienceValidationSchema>) => {
-    setIsLoading(true);
-    const result = await addExperienceToResume(params.id, data.experience);
+    if (checkOffline()) return;
 
-    if (result.success) {
-      toast({
-        title: "Information saved.",
-        description: "Professional experience updated successfully.",
-        className: "bg-white",
-      });
-      handleInputChange({
-        target: {
-          name: "experience",
-          value: data.experience,
-        },
-      });
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
-        variant: "destructive",
-        className: "bg-white",
-      });
+    setIsLoading(true);
+    try {
+      const result = await addExperienceToResume(params.id, data.experience);
+
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Professional experience updated successfully.",
+          className: "bg-white",
+        });
+        handleInputChange({
+          target: {
+            name: "experience",
+            value: data.experience,
+          },
+        });
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

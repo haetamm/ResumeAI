@@ -21,11 +21,15 @@ import {
 import { SkillValidationSchema } from "@/lib/validations/resume";
 import { useState } from "react";
 import { z } from "zod";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 
 const SkillsForm = ({ params }: { params: { id: string } }) => {
   const { formData, handleInputChange } = useFormContext();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const form = useForm<z.infer<typeof SkillValidationSchema>>({
     resolver: zodResolver(SkillValidationSchema),
@@ -75,33 +79,31 @@ const SkillsForm = ({ params }: { params: { id: string } }) => {
   };
 
   const onSave = async () => {
+    if (checkOffline()) return;
+
     setIsLoading(true);
+    try {
+      const skillsData = form.getValues("skills");
+      const result = await addSkillToResume(params.id, skillsData);
 
-    const skillsData = form.getValues("skills");
-    const result = await addSkillToResume(params.id, skillsData);
-
-    if (result.success) {
-      toast({
-        title: "Information saved.",
-        description: "Skill sets updated successfully.",
-        className: "bg-white",
-      });
-      handleInputChange({
-        target: {
-          name: "skills",
-          value: skillsData,
-        },
-      });
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
-        variant: "destructive",
-        className: "bg-white",
-      });
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Skill sets updated successfully.",
+          className: "bg-white",
+        });
+        handleInputChange({
+          target: {
+            name: "skills",
+            value: skillsData,
+          },
+        });
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

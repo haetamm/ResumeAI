@@ -22,7 +22,6 @@ const EditResume = ({ params }: { params: { id: string } }) => {
 
       let id = user?.id || (await getFromDB("userId"));
 
-      // Jika tidak ada userId, langsung redirect dan hentikan eksekusi
       if (!id) {
         router.replace("/dashboard");
         return;
@@ -30,17 +29,19 @@ const EditResume = ({ params }: { params: { id: string } }) => {
 
       setUserId(id);
 
-      // Jika user sedang online, cek kepemilikan resume
       if (user?.id) {
-        const isOwner = await checkResumeOwnership(id, params.id);
+        try {
+          const isOwner = await checkResumeOwnership(id, params.id);
 
-        // Jika bukan pemilik, langsung redirect dan hentikan eksekusi
-        if (!isOwner) {
-          router.replace("/dashboard");
-          return;
+          if (!isOwner) {
+            router.replace("/dashboard");
+            return;
+          }
+
+          setIsResumeOwner(true);
+        } catch (error) {
+          console.error("Error checking ownership:", error);
         }
-
-        setIsResumeOwner(true);
       }
 
       setIsLoading(false);

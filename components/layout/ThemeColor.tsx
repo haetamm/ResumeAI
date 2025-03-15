@@ -12,29 +12,23 @@ import { Check, LayoutGrid } from "lucide-react";
 import { themeColors } from "@/lib/utils";
 import { updateResume } from "@/lib/actions/resume.actions";
 import { useToast } from "../ui/use-toast";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 
 const ThemeColor = ({ params }: { params: { id: string } }) => {
-  const isOffline = typeof window !== "undefined" && !navigator.onLine;
   const { toast } = useToast();
   const { formData, handleInputChange } = useFormContext();
   const [selectedColor, setSelectedColor] = useState(themeColors[0]);
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   useEffect(() => {
     setSelectedColor(formData?.themeColor);
   }, [formData?.themeColor]);
 
   const onColorSelect = async (color: any) => {
-    if (isOffline) {
-      toast({
-        title: "Disconect",
-        description: isOffline
-          ? "You are offline. Please connect to the internet"
-          : "User not authenticated. Please log in.",
-        variant: "destructive",
-        className: "bg-white",
-      });
-      return;
-    } else {
+    if (checkOffline()) return;
+    try {
       setSelectedColor(color);
 
       handleInputChange({
@@ -57,14 +51,9 @@ const ThemeColor = ({ params }: { params: { id: string } }) => {
           description: "Theme color updated successfully.",
           className: "bg-white",
         });
-      } else {
-        toast({
-          title: "Uh Oh! Something went wrong.",
-          description: result?.error,
-          variant: "destructive",
-          className: "bg-white",
-        });
       }
+    } catch (error) {
+      handleError(error);
     }
   };
 

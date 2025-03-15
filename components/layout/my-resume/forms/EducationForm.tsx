@@ -16,6 +16,8 @@ import { generateEducationDescription } from "@/lib/actions/gemini.actions";
 import { addEducationToResume } from "@/lib/actions/resume.actions";
 import { useFormContext } from "@/lib/context/FormProvider";
 import { educationFields } from "@/lib/fields";
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 import { EducationValidationSchema } from "@/lib/validations/resume";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Brain, Loader2, Minus, Plus } from "lucide-react";
@@ -33,6 +35,8 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
   >([]);
   const [currentAiIndex, setCurrentAiIndex] = useState(0);
   const { toast } = useToast();
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const form = useForm<z.infer<typeof EducationValidationSchema>>({
     resolver: zodResolver(EducationValidationSchema),
@@ -110,6 +114,8 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
   };
 
   const generateEducationDescriptionFromAI = async (index: number) => {
+    if (checkOffline()) return;
+
     const education = form.getValues("education")[index];
     if (!education.universityName || !education.degree || !education.major) {
       toast({
@@ -141,32 +147,29 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
   };
 
   const onSave = async (data: z.infer<typeof EducationValidationSchema>) => {
+    if (checkOffline()) return;
+
     setIsLoading(true);
-
-    const result = await addEducationToResume(params.id, data.education);
-
-    if (result.success) {
-      toast({
-        title: "Information saved.",
-        description: "Educational details updated successfully.",
-        className: "bg-white",
-      });
-      handleInputChange({
-        target: {
-          name: "education",
-          value: data.education,
-        },
-      });
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
-        variant: "destructive",
-        className: "bg-white",
-      });
+    try {
+      const result = await addEducationToResume(params.id, data.education);
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Educational details updated successfully.",
+          className: "bg-white",
+        });
+        handleInputChange({
+          target: {
+            name: "education",
+            value: data.education,
+          },
+        });
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   };
 
   return (

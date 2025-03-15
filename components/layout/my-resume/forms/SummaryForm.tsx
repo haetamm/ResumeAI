@@ -20,6 +20,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { SummaryValidationSchema } from "@/lib/validations/resume"; // Sesuaikan path
+import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
+import { useHandleError } from "@/lib/hooks/useHandleError";
 
 const SummaryForm = ({ params }: { params: { id: string } }) => {
   const listRef = useRef<HTMLDivElement>(null);
@@ -31,6 +33,8 @@ const SummaryForm = ({ params }: { params: { id: string } }) => {
     []
   );
   const { toast } = useToast();
+  const { checkOffline } = useCheckOffline();
+  const { handleError } = useHandleError();
 
   const form = useForm<z.infer<typeof SummaryValidationSchema>>({
     resolver: zodResolver(SummaryValidationSchema),
@@ -56,6 +60,8 @@ const SummaryForm = ({ params }: { params: { id: string } }) => {
   };
 
   const generateSummaryFromAI = async () => {
+    if (checkOffline()) return;
+
     setIsAiLoading(true);
     const result = await generateSummary(formData?.jobTitle);
     setAiGeneratedSummaryList(result);
@@ -70,25 +76,25 @@ const SummaryForm = ({ params }: { params: { id: string } }) => {
   };
 
   const onSave = async (data: z.infer<typeof SummaryValidationSchema>) => {
-    setIsLoading(true);
-    const updates = { summary: data.summary };
-    const result = await updateResume({ resumeId: params.id, updates });
+    if (checkOffline()) return;
 
-    if (result.success) {
-      toast({
-        title: "Information saved.",
-        description: "Summary updated successfully.",
-        className: "bg-white",
-      });
-    } else {
-      toast({
-        title: "Uh Oh! Something went wrong.",
-        description: result?.error,
-        variant: "destructive",
-        className: "bg-white",
-      });
+    setIsLoading(true);
+    try {
+      const updates = { summary: data.summary };
+      const result = await updateResume({ resumeId: params.id, updates });
+
+      if (result.success) {
+        toast({
+          title: "Information saved.",
+          description: "Summary updated successfully.",
+          className: "bg-white",
+        });
+      }
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
