@@ -1,11 +1,23 @@
 "use server";
 
+import Certificate from "../models/certificate.model";
 import Education from "../models/education.model";
 import Experience from "../models/experience.model";
+import Portofolio from "../models/portofolio.model";
 import Resume from "../models/resume.model";
 import Skill from "../models/skill.model";
+import Socmed from "../models/socmed.model";
 import { connectToDB } from "../mongoose";
 import { revalidatePath } from "next/cache";
+
+async function getResume(resumeId: string) {
+  await connectToDB();
+  const resume = await Resume.findOne({ resumeId: resumeId });
+  if (!resume) {
+    throw new Error("Resume not found");
+  }
+  return resume;
+}
 
 export async function createResume({
   resumeId,
@@ -46,8 +58,20 @@ export async function fetchResume(resumeId: string) {
         model: Education,
       })
       .populate({
+        path: "certificate",
+        model: Certificate,
+      })
+      .populate({
+        path: "portofolio",
+        model: Portofolio,
+      })
+      .populate({
         path: "skills",
         model: Skill,
+      })
+      .populate({
+        path: "socmed",
+        model: Socmed,
       });
 
     return JSON.stringify(resume);
@@ -65,7 +89,10 @@ export async function fetchUserResumes(userId: string): Promise<string> {
     const resumes = await Resume.find({ userId: userId })
       .populate("experience")
       .populate("education")
-      .populate("skills");
+      .populate("skills")
+      .populate("certificate")
+      .populate("portofolio")
+      .populate("socmed");
     return JSON.stringify(resumes);
   } catch (error: any) {
     throw new Error(`Failed to fetch user resumes: ${error.message}`);
@@ -96,22 +123,19 @@ export async function updateResume({
   updates: Partial<{
     firstName: string;
     lastName: string;
+    birthplace: string;
+    birthdate: string;
     jobTitle: string;
     address: string;
     phone: string;
     email: string;
+    imageUrl: string,
     summary: string;
     themeColor: string;
   }>;
 }) {
   try {
-    await connectToDB();
-
-    const resume = await Resume.findOne({ resumeId: resumeId });
-
-    if (!resume) {
-      return { success: false, error: "Resume not found" };
-    }
+    const resume = await getResume(resumeId);
 
     Object.keys(updates).forEach((key) => {
       const updateValue = updates[key as keyof typeof updates];
@@ -132,134 +156,144 @@ export async function updateResume({
   }
 }
 
+async function updateResumeField(
+  resumeId: string,
+  fieldName: string,
+  dataArray: any[],
+  Model: any
+) {
+  try {
+    const resume = await getResume(resumeId);
+
+    // Simpan ID awal sebelum diupdate
+    const originalIds = [...resume[fieldName]].map((id) => id.toString());
+
+    // Proses data baru atau update data yang ada
+    const savedItems = await Promise.all(
+      dataArray.map(async (data: any) => {
+        if (data._id) {
+          const existingItem = await Model.findById(data._id);
+          if (existingItem) {
+            return await Model.findByIdAndUpdate(data._id, data, { new: true });
+          }
+        }
+        const newItem = new Model(data);
+        return await newItem.save();
+      })
+    );
+
+    // Update field di resume dengan ID baru
+    const itemIds = savedItems.map((item) => item._id);
+    resume[fieldName] = itemIds;
+
+    const updatedResume = await resume.save();
+
+    // Hapus item yang tidak lagi ada di daftar baru
+    const updatedIds = updatedResume[fieldName].map((id: string) =>
+      id.toString()
+    );
+    const idsToDelete = originalIds.filter((id) => !updatedIds.includes(id));
+
+    if (idsToDelete.length > 0) {
+      await Model.deleteMany({ _id: { $in: idsToDelete } });
+    }
+
+    return { success: true, data: JSON.stringify(updatedResume) };
+  } catch (error: any) {
+    console.error(`Error updating ${fieldName} in resume: `, error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function addExperienceToResume(
   resumeId: string,
   experienceDataArray: any
 ) {
-  try {
-    const resume = await Resume.findOne({ resumeId: resumeId });
-
-    if (!resume) {
-      throw new Error("Resume not found");
-    }
-
-    const savedExperiences = await Promise.all(
-      experienceDataArray.map(async (experienceData: any) => {
-        if (experienceData._id) {
-          const existingExperience = await Experience.findById(
-            experienceData._id
-          );
-          if (existingExperience) {
-            return await Experience.findByIdAndUpdate(
-              experienceData._id,
-              experienceData,
-              { new: true }
-            );
-          }
-        }
-        const newExperience = new Experience(experienceData);
-        return await newExperience.save();
-      })
-    );
-
-    const experienceIds = savedExperiences.map((experience) => experience._id);
-    resume.experience = experienceIds;
-
-    const updatedResume = await resume.save();
-
-    return { success: true, data: JSON.stringify(updatedResume) };
-  } catch (error: any) {
-    console.error("Error adding or updating experience to resume: ", error);
-    return { success: false, error: error?.message };
-  }
+  return await updateResumeField(
+    resumeId,
+    "experience",
+    experienceDataArray,
+    Experience
+  );
 }
 
 export async function addEducationToResume(
   resumeId: string,
   educationDataArray: any
 ) {
-  try {
-    const resume = await Resume.findOne({ resumeId: resumeId });
-
-    if (!resume) {
-      throw new Error("Resume not found");
-    }
-
-    const savedEducation = await Promise.all(
-      educationDataArray.map(async (educationData: any) => {
-        if (educationData._id) {
-          const existingEducation = await Education.findById(educationData._id);
-          if (existingEducation) {
-            return await Education.findByIdAndUpdate(
-              educationData._id,
-              educationData,
-              { new: true }
-            );
-          }
-        }
-        const newEducation = new Education(educationData);
-        return await newEducation.save();
-      })
-    );
-
-    const educationIds = savedEducation.map((education) => education._id);
-    resume.education = educationIds;
-
-    const updatedResume = await resume.save();
-
-    return { success: true, data: JSON.stringify(updatedResume) };
-  } catch (error: any) {
-    console.error("Error adding or updating education to resume: ", error);
-    return { success: false, error: error?.message };
-  }
+  return await updateResumeField(
+    resumeId,
+    "education",
+    educationDataArray,
+    Education
+  );
 }
 
 export async function addSkillToResume(resumeId: string, skillDataArray: any) {
-  try {
-    const resume = await Resume.findOne({ resumeId: resumeId });
+  return await updateResumeField(resumeId, "skills", skillDataArray, Skill);
+}
 
-    if (!resume) {
-      throw new Error("Resume not found");
-    }
+export async function addCertificateToResume(
+  resumeId: string,
+  certificationDataArray: any
+) {
+  return await updateResumeField(
+    resumeId,
+    "certificate",
+    certificationDataArray,
+    Certificate
+  );
+}
 
-    const savedSkills = await Promise.all(
-      skillDataArray.map(async (skillData: any) => {
-        if (skillData._id) {
-          const existingSkill = await Skill.findById(skillData._id);
-          if (existingSkill) {
-            return await Skill.findByIdAndUpdate(skillData._id, skillData, {
-              new: true,
-            });
-          }
-        }
-        const newSkill = new Skill(skillData);
-        return await newSkill.save();
-      })
-    );
+export async function addPortofolioToResume(
+  resumeId: string,
+  portofolioDataArray: any
+) {
+  return await updateResumeField(
+    resumeId,
+    "portofolio",
+    portofolioDataArray,
+    Portofolio
+  );
+}
 
-    const skillIds = savedSkills.map((skill) => skill._id);
-    resume.skills = skillIds;
-
-    const updatedResume = await resume.save();
-
-    return { success: true, data: JSON.stringify(updatedResume) };
-  } catch (error: any) {
-    console.error("Error adding or updating skill to resume: ", error);
-    return { success: false, error: error?.message };
-  }
+export async function addSocmedToResume(
+  resumeId: string,
+  socmedDataArray: any
+) {
+  return await updateResumeField(resumeId, "socmed", socmedDataArray, Socmed);
 }
 
 export async function deleteResume(resumeId: string, path: string) {
   try {
-    await connectToDB();
+    const resume = await getResume(resumeId);
 
-    await Resume.findOneAndDelete({ resumeId: resumeId });
+    // Manually delete related documents
+    const collections = [
+      { model: Experience, field: resume.experience },
+      { model: Education, field: resume.education },
+      { model: Skill, field: resume.skills },
+      { model: Certificate, field: resume.certificate },
+      { model: Portofolio, field: resume.portofolio },
+      { model: Socmed, field: resume.socmed },
+    ];
+
+    await Promise.all(
+      collections.map(({ model, field }) => {
+        console.log(`Deleting ${model.modelName}:`, field);
+        return field && field.length > 0
+          ? model.deleteMany({ _id: { $in: field } })
+          : Promise.resolve();
+      })
+    );
+
+    await resume.deleteOne();
 
     revalidatePath(path);
 
     return { success: true };
   } catch (error: any) {
     console.error(`Failed to delete resume: ${error.message}`);
-    return { success: false, error: error.message };
+    throw error;
   }
 }

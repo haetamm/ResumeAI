@@ -13,40 +13,40 @@ const useFetchResume = (resumeId: string) => {
   const [loading, setLoading] = useState(true);
   const isMountedRef = useRef(true);
 
-  useEffect(() => {
-    isMountedRef.current = true; // Set true saat mount
+  const loadResumeData = async () => {
+    try {
+      setLoading(true);
 
-    const loadResumeData = async () => {
-      try {
-        setLoading(true);
-
-        // Ambil data dari IndexedDB
-        const offlineResume = await getResumeByIdFromDB(resumeId);
-        if (offlineResume && isMountedRef.current) {
-          setFormData(offlineResume);
-        }
-
-        // Ambil data dari server
-        const resumeData = await fetchResume(resumeId);
-        if (resumeData && isMountedRef.current) {
-          const resume = JSON.parse(resumeData);
-          setFormData(resume);
-        }
-      } catch (error) {
-        console.error("Error fetching resume:", error);
-      } finally {
-        if (isMountedRef.current) setLoading(false);
+      const offlineResume = await getResumeByIdFromDB(resumeId);
+      if (offlineResume && isMountedRef.current) {
+        setFormData(offlineResume);
       }
-    };
+
+      const resumeData = await fetchResume(resumeId);
+      if (resumeData && isMountedRef.current) {
+        const resume = JSON.parse(resumeData);
+        setFormData(resume);
+      }
+    } catch (error) {
+      console.error("Error fetching resume:", error);
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    isMountedRef.current = true;
 
     loadResumeData();
 
     return () => {
-      isMountedRef.current = false; // Set false saat unmount
+      isMountedRef.current = false;
     };
   }, [resumeId]);
 
-  return { formData, setFormData, loading };
+  return { formData, setFormData, loading, loadResumeData };
 };
 
 export default useFetchResume;

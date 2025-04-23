@@ -36,22 +36,28 @@ const PersonalDetailsForm = ({ params }: { params: { id: string } }) => {
     defaultValues: {
       firstName: "",
       lastName: "",
+      birthplace: "",
+      birthdate: "",
       jobTitle: "",
       address: "",
       phone: "",
       email: "",
+      imageUrl: ""
     },
   });
 
   useEffect(() => {
     if (formData && Object.keys(formData).length > 0) {
       form.reset({
-        firstName: formData?.firstName || "",
-        lastName: formData?.lastName || "",
-        jobTitle: formData?.jobTitle || "",
-        address: formData?.address || "",
-        phone: formData?.phone || "",
-        email: formData?.email || "",
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        birthplace: formData.birthplace || "",
+        birthdate: formData.birthdate || "",
+        jobTitle: formData.jobTitle || "",
+        address: formData.address || "",
+        phone: formData.phone || "",
+        email: formData.email || "",
+        imageUrl: formData.imageUrl || ""
       });
     }
   }, [formData, form]);

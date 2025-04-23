@@ -8,6 +8,9 @@ const resumeSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
   firstName: { type: String },
   lastName: { type: String },
+  imageUrl: { type: String },
+  birthplace: { type: String },
+  birthdate: { type: String },
   jobTitle: { type: String },
   address: { type: String },
   phone: { type: String },
@@ -16,6 +19,9 @@ const resumeSchema = new mongoose.Schema({
   experience: [{ type: mongoose.Schema.Types.ObjectId, ref: "Experience" }],
   education: [{ type: mongoose.Schema.Types.ObjectId, ref: "Education" }],
   skills: [{ type: mongoose.Schema.Types.ObjectId, ref: "Skill" }],
+  certificate: [{ type: mongoose.Schema.Types.ObjectId, ref: "Certificate" }],
+  portofolio: [{ type: mongoose.Schema.Types.ObjectId, ref: "Portofolio" }],
+  socmed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Socmed" }],
   themeColor: { type: String, default: themeColors[0] },
 });
 

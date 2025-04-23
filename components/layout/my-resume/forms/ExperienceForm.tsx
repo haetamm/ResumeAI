@@ -24,10 +24,11 @@ import { ExperienceValidationSchema } from "@/lib/validations/resume";
 import { experienceFields } from "@/lib/fields";
 import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
 import { useHandleError } from "@/lib/hooks/useHandleError";
+import { ActionButtons } from "@/components/common/ActionButton";
 
 const ExperienceForm = ({ params }: { params: { id: string } }) => {
   const listRef = useRef<HTMLDivElement>(null);
-  const { formData, handleInputChange } = useFormContext();
+  const { formData, handleInputChange, loadResumeData } = useFormContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isAiLoading, setIsLoadingAi] = useState(false);
   const [aiGeneratedSummaryList, setAiGeneratedSummaryList] = useState<any[]>(
@@ -44,7 +45,16 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
     defaultValues: {
       experience:
         formData?.experience?.length > 0
-          ? formData.experience
+          ? formData.experience.map((exp: any) => ({
+              _id: exp._id || "",
+              title: exp.title || "",
+              companyName: exp.companyName || "",
+              city: exp.city || "",
+              state: exp.state || "",
+              startDate: exp.startDate || "",
+              endDate: exp.endDate || "",
+              workSummary: exp.workSummary || "",
+            }))
           : [
               {
                 title: "",
@@ -154,6 +164,7 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
       const result = await addExperienceToResume(params.id, data.experience);
 
       if (result.success) {
+        loadResumeData();
         toast({
           title: "Information saved.",
           description: "Professional experience updated successfully.",
@@ -196,7 +207,9 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
                     control={form.control}
                     name={`experience.${index}.${config.name}`}
                     render={({ field }) => (
-                      <FormItem className={config.colSpan || ""}>
+                      <FormItem
+                        className={config.fullWidth ? "col-span-2" : ""}
+                      >
                         {config.type === "richText" ? (
                           <div className="flex justify-between items-end">
                             <FormLabel className="text-slate-700 font-semibold text-md">
@@ -261,24 +274,11 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
               </div>
             ))}
             <div className="mt-3 flex gap-2 justify-between">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={AddNewExperience}
-                  className="text-primary"
-                  type="button"
-                >
-                  <Plus className="size-4 mr-2" /> Add More
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => RemoveExperience(fields.length - 1)}
-                  className="text-primary"
-                  type="button"
-                >
-                  <Minus className="size-4 mr-2" /> Remove
-                </Button>
-              </div>
+              <ActionButtons
+                onAdd={AddNewExperience}
+                onRemove={RemoveExperience}
+                fieldCount={fields.length}
+              />
               <Button
                 type="submit"
                 disabled={isLoading || !form.formState.isValid}

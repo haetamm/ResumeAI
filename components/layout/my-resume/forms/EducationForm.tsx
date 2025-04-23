@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionButtons } from "@/components/common/ActionButton";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,7 +28,7 @@ import { z } from "zod";
 
 const EducationForm = ({ params }: { params: { id: string } }) => {
   const listRef = useRef<HTMLDivElement>(null);
-  const { formData, handleInputChange } = useFormContext();
+  const { formData, handleInputChange, loadResumeData } = useFormContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiGeneratedDescriptionList, setAiGeneratedDescriptionList] = useState<
@@ -44,7 +45,15 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
     defaultValues: {
       education:
         formData?.education?.length > 0
-          ? formData.education
+          ? formData.education.map((edu: any) => ({
+              _id: edu._id || "",
+              universityName: edu.universityName || "",
+              degree: edu.degree || "",
+              major: edu.major || "",
+              startDate: edu.startDate || "",
+              endDate: edu.endDate || "",
+              description: edu.description || "",
+            }))
           : [
               {
                 universityName: "",
@@ -153,6 +162,7 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
     try {
       const result = await addEducationToResume(params.id, data.education);
       if (result.success) {
+        loadResumeData();
         toast({
           title: "Information saved.",
           description: "Educational details updated successfully.",
@@ -195,7 +205,9 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
                     control={form.control}
                     name={`education.${index}.${config.name}`}
                     render={({ field }) => (
-                      <FormItem className={config.colSpan || ""}>
+                      <FormItem
+                        className={config.fullWidth ? "col-span-2" : ""}
+                      >
                         {config.type === "textarea" ? (
                           <div className="flex justify-between items-end">
                             <FormLabel className="text-slate-700 font-semibold text-md">
@@ -232,7 +244,6 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
                                 field.onChange(e);
                                 handleChange(index, e);
                               }}
-                              defaultValue={(field.value as string) || ""}
                               className={`no-focus ${
                                 form.formState.errors.education?.[index]?.[
                                   config.name
@@ -269,24 +280,11 @@ const EducationForm = ({ params }: { params: { id: string } }) => {
               </div>
             ))}
             <div className="mt-3 flex gap-2 justify-between">
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={AddNewEducation}
-                  className="text-primary"
-                  type="button"
-                >
-                  <Plus className="size-4 mr-2" /> Add More
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => RemoveEducation(fields.length - 1)}
-                  className="text-primary"
-                  type="button"
-                >
-                  <Minus className="size-4 mr-2" /> Remove
-                </Button>
-              </div>
+              <ActionButtons
+                onAdd={AddNewEducation}
+                onRemove={RemoveEducation}
+                fieldCount={fields.length}
+              />
               <Button
                 type="submit"
                 disabled={isLoading || !form.formState.isValid}

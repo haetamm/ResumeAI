@@ -55,6 +55,7 @@ const config = {
       fontFamily: {
         inter: "var(--font-inter)",
         nunito: "var(--font-nunito)",
+        cambria: "var(--font-cambria)",
         body: [
           "Inter",
           "ui-sans-serif",

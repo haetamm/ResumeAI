@@ -23,9 +23,10 @@ import { useState } from "react";
 import { z } from "zod";
 import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
 import { useHandleError } from "@/lib/hooks/useHandleError";
+import { ActionButtons } from "@/components/common/ActionButton";
 
 const SkillsForm = ({ params }: { params: { id: string } }) => {
-  const { formData, handleInputChange } = useFormContext();
+  const { formData, handleInputChange, loadResumeData } = useFormContext();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { checkOffline } = useCheckOffline();
@@ -37,7 +38,11 @@ const SkillsForm = ({ params }: { params: { id: string } }) => {
     defaultValues: {
       skills:
         formData?.skills?.length > 0
-          ? formData.skills
+          ? formData.skills.map((skill: any) => ({
+              _id: skill._id || "",
+              name: skill.name || "",
+              rating: skill.rating || 1,
+            }))
           : [
               {
                 name: "",
@@ -87,6 +92,7 @@ const SkillsForm = ({ params }: { params: { id: string } }) => {
       const result = await addSkillToResume(params.id, skillsData);
 
       if (result.success) {
+        loadResumeData();
         toast({
           title: "Information saved.",
           description: "Skill sets updated successfully.",
@@ -171,24 +177,11 @@ const SkillsForm = ({ params }: { params: { id: string } }) => {
             </div>
           ))}
           <div className="mt-5 flex gap-2 justify-between">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => append({ name: "", rating: 1 })}
-                className="text-primary"
-                type="button"
-              >
-                <Plus className="size-4 mr-2" /> Add More
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => remove(fields.length - 1)}
-                className="text-primary"
-                type="button"
-              >
-                <Minus className="size-4 mr-2" /> Remove
-              </Button>
-            </div>
+            <ActionButtons
+              onAdd={() => append({ name: "", rating: 1 })}
+              onRemove={remove}
+              fieldCount={fields.length}
+            />
             <Button
               disabled={isLoading || !form.formState.isValid}
               type="submit"

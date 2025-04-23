@@ -9,6 +9,7 @@ interface FormContextType {
   activeFormIndex: number;
   setActiveFormIndex: (index: number) => void;
   loading: boolean;
+  loadResumeData: () => void;
 }
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -20,7 +21,9 @@ export const FormProvider = ({
   params: { id: string };
   children: ReactNode;
 }) => {
-  const { formData, setFormData, loading } = useFetchResume(params.id);
+  const { formData, setFormData, loading, loadResumeData } = useFetchResume(
+    params.id
+  );
   const [activeFormIndex, setActiveFormIndex] = useState(1);
 
   const handleInputChange = (e: { target: { name: string; value: any } }) => {
@@ -37,6 +40,7 @@ export const FormProvider = ({
     activeFormIndex,
     setActiveFormIndex,
     loading,
+    loadResumeData,
   };
 
   return (

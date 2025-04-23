@@ -11,14 +11,10 @@ import ExperienceForm from "./forms/ExperienceForm";
 import EducationForm from "./forms/EducationForm";
 import SkillsForm from "./forms/SkillsForm";
 import ThemeColor from "@/components/layout/ThemeColor";
-import { useToast } from "@/components/ui/use-toast";
 import { useFormContext } from "@/lib/context/FormProvider";
-import {
-  addEducationToResume,
-  addExperienceToResume,
-  addSkillToResume,
-  updateResume,
-} from "@/lib/actions/resume.actions";
+import CertificateForm from "./forms/CertificateForm";
+import PortofolioForm from "./forms/PortofolioForm";
+import SocmedForm from "./forms/SocmedForm";
 
 const ResumeEditForm = ({
   params,
@@ -32,8 +28,7 @@ const ResumeEditForm = ({
   }
 
   const router = useRouter();
-  const { toast } = useToast();
-  const { formData, activeFormIndex, setActiveFormIndex } = useFormContext();
+  const { activeFormIndex, setActiveFormIndex } = useFormContext();
   const [isLoading, setIsLoading] = React.useState(false);
 
   return (
@@ -55,77 +50,15 @@ const ResumeEditForm = ({
             size="sm"
             disabled={isLoading}
             onClick={async () => {
-              if (activeFormIndex !== 5) {
+              if (activeFormIndex !== 8) {
                 setActiveFormIndex(activeFormIndex + 1);
               } else {
                 setIsLoading(true);
-
-                const updates = {
-                  firstName: formData?.firstName,
-                  lastName: formData?.lastName,
-                  jobTitle: formData?.jobTitle,
-                  address: formData?.address,
-                  phone: formData?.phone,
-                  email: formData?.email,
-                  summary: formData?.summary,
-                  experience: formData?.experience,
-                  education: formData?.education,
-                  skills: formData?.skills,
-                };
-
-                const updateResult = await updateResume({
-                  resumeId: params.id,
-                  updates: {
-                    firstName: updates.firstName,
-                    lastName: updates.lastName,
-                    jobTitle: updates.jobTitle,
-                    address: updates.address,
-                    phone: updates.phone,
-                    email: updates.email,
-                    summary: updates.summary,
-                  },
-                });
-
-                const experienceResult = await addExperienceToResume(
-                  params.id,
-                  updates.experience
-                );
-
-                const educationResult = await addEducationToResume(
-                  params.id,
-                  updates.education
-                );
-
-                const skillsResult = await addSkillToResume(
-                  params.id,
-                  updates.skills
-                );
-
-                setIsLoading(false);
-
-                if (
-                  updateResult.success &&
-                  experienceResult.success &&
-                  educationResult.success &&
-                  skillsResult.success
-                ) {
-                  router.push("/my-resume/" + params.id + "/view");
-                } else {
-                  toast({
-                    title: "Uh Oh! Something went wrong.",
-                    description:
-                      updateResult?.error ||
-                      experienceResult?.error ||
-                      educationResult?.error ||
-                      skillsResult?.error,
-                    variant: "destructive",
-                    className: "bg-white",
-                  });
-                }
+                router.push("/my-resume/" + params.id + "/view");
               }
             }}
           >
-            {activeFormIndex === 5 ? (
+            {activeFormIndex === 8 ? (
               <>
                 {isLoading ? (
                   <>
@@ -154,8 +87,14 @@ const ResumeEditForm = ({
       ) : activeFormIndex === 4 ? (
         <EducationForm params={params} />
       ) : activeFormIndex === 5 ? (
-        <SkillsForm params={params} />
+        <CertificateForm params={params} />
       ) : activeFormIndex === 6 ? (
+        <PortofolioForm params={params} />
+      ) : activeFormIndex === 7 ? (
+        <SkillsForm params={params} />
+      ) : activeFormIndex === 8 ? (
+        <SocmedForm params={params} />
+      ) : activeFormIndex === 9 ? (
         redirect("/my-resume/" + params.id + "/view")
       ) : null}
     </div>

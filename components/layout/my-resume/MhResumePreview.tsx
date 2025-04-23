@@ -2,15 +2,15 @@
 
 import React from "react";
 import { useFormContext } from "@/lib/context/FormProvider";
-import PersonalDetailsPreview from "./previews/PersonalDetailsPreview";
-import SkillsPreview from "./previews/SkillsPreview";
-import SummaryPreview from "./previews/SummaryPreview";
-import ExperiencePreview from "./previews/ExperiencePreview";
-import EducationalPreview from "./previews/EducationalPreview";
+import PersonalDetailsPreview from "./previews/mh/PersonalDetailsPreview";
+import SkillsPreview from "./previews/mh/SkillsPreview";
+import SummaryPreview from "./previews/mh/SummaryPreview";
+import ExperiencePreview from "./previews/mh/ExperiencePreview";
+import EducationalPreview from "./previews/mh/EducationalPreview";
 import { themeColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
-const ResumePreview = () => {
+const MhResumePreview = () => {
   const { formData, setActiveFormIndex, loading } = useFormContext();
   const pathname = usePathname();
 
@@ -82,4 +82,4 @@ const ResumePreview = () => {
   );
 };
 
-export default ResumePreview;
+export default MhResumePreview;

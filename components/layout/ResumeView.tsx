@@ -4,40 +4,32 @@ import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { useFormContext } from "@/lib/context/FormProvider";
 import { RWebShare } from "react-web-share";
-import React from "react";
-import ResumePreview from "@/components/layout/my-resume/ResumePreview";
+import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import PageWrapper from "@/components/common/PageWrapper";
 import { DownloadIcon, Share2Icon } from "lucide-react";
-import html2pdf from "html2pdf.js";
+import ThResumePreview from "./my-resume/ThResumePreview";
+import { useHandleError } from "@/lib/hooks/useHandleError";
+import { downloadWordDocument } from "@/lib/actions/download.action";
 
 interface FinalResumeViewProps {
   isOwnerView: boolean;
 }
 
 const FinalResumeView: React.FC<FinalResumeViewProps> = ({ isOwnerView }) => {
+  const [loading, setLoading] = useState(false);
   const path = usePathname();
   const { formData } = useFormContext();
-
-  const sanitize = (str: string | undefined | null): string =>
-    str?.trim().replace(/\s+/g, "_") || "User_Resume";
-
-  const handleDownloadPDF = () => {
-    const element = document.getElementById("print-area");
-    const opt = {
-      margin: 0,
-      filename: `${sanitize(
-        `${formData?.firstName ?? "User"}_${formData?.lastName ?? ""}_${
-          formData?.jobTitle ?? ""
-        }_Resume.pdf`
-      )}`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    };
-
-    if (element) {
-      html2pdf().set(opt).from(element).save();
+  const { handleError } = useHandleError();
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+  const qrCodeUrl = `${baseUrl}${path}`; 
+  
+  const handleDownloadWord = async () => {
+    setLoading(true);
+    try {
+      await downloadWordDocument(formData, qrCodeUrl, handleError);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,10 +61,10 @@ const FinalResumeView: React.FC<FinalResumeViewProps> = ({ isOwnerView }) => {
             )}
             <div className="flex max-sm:flex-col justify-center gap-8 my-10">
               <Button
+                onClick={handleDownloadWord} 
                 className="flex px-12 py-6 gap-2 rounded-full bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-700/30 text-white"
-                onClick={() => handleDownloadPDF()}
               >
-                <DownloadIcon className="size-6" /> Download
+                <DownloadIcon className="size-6" /> {loading ? 'Downloading' : 'Download'}
               </Button>
               <RWebShare
                 data={{
@@ -91,10 +83,8 @@ const FinalResumeView: React.FC<FinalResumeViewProps> = ({ isOwnerView }) => {
             </div>
           </div>
         </div>
-        <div className="px-10 pt-4 pb-16 max-sm:px-5 max-sm:pb-8 print:p-0">
-          <div id="print-area">
-            <ResumePreview />
-          </div>
+        <div className="px-2 md:px-10 pt-4 pb-16 max-sm:pb-8 print:p-0 max-w-[210mm] mx-auto overflow-auto">
+          <ThResumePreview />
         </div>
       </PageWrapper>
     </>
