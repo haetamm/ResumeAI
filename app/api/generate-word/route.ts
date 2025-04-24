@@ -90,6 +90,8 @@ export async function POST(request: Request) {
       ...port,
       startDate: getMonthAndYear(port.startDate || ''),
       endDate: getMonthAndYear(port.endDate || ''),
+      sourceCode: port.sourceCode || '-',
+      preview: port.preview || '-'
     }));
 
     const typedSkills: Skill[] = skills;
@@ -115,14 +117,14 @@ export async function POST(request: Request) {
     });
 
     doc.setData({
-      firstName: firstName || 'N/A',
-      lastName: lastName || 'N/A',
-      email: email || 'N/A',
-      phone: phone || 'N/A',
-      birthplace: birthplace || 'N/A',
-      birthdate: birthdate ? formatDate(birthdate) : 'N/A',
-      address: address || 'N/A',
-      jobTitle: jobTitle || 'N/A',
+      firstName: firstName || '-',
+      lastName: lastName || '-',
+      email: email || '-',
+      phone: phone || '-',
+      birthplace: birthplace || '-',
+      birthdate: birthdate ? formatDate(birthdate) : '-',
+      address: address || '-',
+      jobTitle: jobTitle || '-',
       hasEducation,
       education: processedEducation,
       hasExperience,

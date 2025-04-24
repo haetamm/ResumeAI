@@ -13,14 +13,6 @@ const PersonalDetailPreview = () => {
         </p>
       </div>
       <div className="mt-2">
-        <p className="font-medium">TEMPAT LAHIR:</p>
-        <p className="text-gray-300">{formData?.birthplace}</p>
-      </div>
-      <div className="mt-2">
-        <p className="font-medium">TANGGAL LAHIR:</p>
-        <p className="text-gray-300">{formatDate(formData?.birthdate)}</p>
-      </div>
-      <div className="mt-2">
         <p className="font-medium">CONTACT:</p>
         <a
           href={`https://wa.me/${formData?.phone}`}

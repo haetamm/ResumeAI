@@ -26,9 +26,13 @@ export const address = z
 export const phone = z
   .string()
   .trim()
-  .regex(/^\+?[0-9]\d{8,14}$/, {
-    message: "Phone number must be a valid number between 9-15 digits",
-  });
+  .refine(
+    (val) => val === "" || /^\+?[0-9]\d{8,14}$/.test(val),
+    {
+      message: "Phone number must be a valid number between 9-15 digits",
+    }
+  )
+  .optional();
 
 export const email = z.string().email({ message: "Invalid email address" });
 
@@ -107,7 +111,7 @@ export const PersonalDetailValidationSchema = z.object({
   lastName: name,
   imageUrl: linkOptional,
   birthplace,
-  birthdate: startDate,
+  birthdate: endDate,
   jobTitle,
   address,
   phone,

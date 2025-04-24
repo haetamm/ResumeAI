@@ -55,7 +55,7 @@ const PortofolioPreview = () => {
                           rel="noopener noreferrer"
                           className="text-blue-900"
                         >
-                          here
+                          Lihat
                         </a>
                       </p>
                     )}
@@ -68,7 +68,7 @@ const PortofolioPreview = () => {
                           rel="noopener noreferrer"
                           className="text-blue-900"
                         >
-                          here
+                          Lihat
                         </a>
                       </p>
                     )}
