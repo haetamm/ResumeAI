@@ -5,8 +5,8 @@ const portofolioSchema = new mongoose.Schema({
   description: { type: String },
   preview: { type: String },
   sourceCode: { type: String },
-  startDate: { type: String },
-  endDate: { type: String },
+  startDate: { type: Date },
+  endDate: { type: Date },
 });
 
 const Portofolio =

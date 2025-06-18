@@ -64,6 +64,7 @@ export async function fetchResume(resumeId: string) {
       .populate({
         path: "portofolio",
         model: Portofolio,
+        options: { sort: { startDate: -1 } }, 
       })
       .populate({
         path: "skills",
