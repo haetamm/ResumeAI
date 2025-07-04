@@ -63,3 +63,13 @@ export const formatDate = (date: string | null) => {
     .toString()
     .padStart(2, "0")}-${dateObj.getFullYear()}`;
 };
+
+export const formatDateToInput = (isoDate: string | undefined): string => {
+  if (!isoDate) return "";
+  return isoDate.split("T")[0]; // Converts "2025-05-14T00:00:00.000Z" to "2025-05-14"
+};
+
+export const formatDateToISO = (date: string | undefined): string => {
+  if (!date) return "";
+  return new Date(date).toISOString();
+};

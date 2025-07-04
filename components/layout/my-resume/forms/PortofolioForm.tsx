@@ -18,6 +18,7 @@ import { useFormContext } from "@/lib/context/FormProvider";
 import { portofolioFields } from "@/lib/fields";
 import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
 import { useHandleError } from "@/lib/hooks/useHandleError";
+import { formatDateToInput, formatDateToISO } from "@/lib/utils";
 import { PortofolioValidationSchema } from "@/lib/validations/resume";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -44,8 +45,8 @@ const PortofolioForm = ({ params }: { params: { id: string } }) => {
               description: porto.description || "",
               preview: porto.preview || "",
               sourceCode: porto.sourceCode || "",
-              startDate: porto.startDate || "",
-              endDate: porto.endDate || "",
+              startDate: formatDateToInput(porto.startDate) || "",
+              endDate: formatDateToInput(porto.endDate) || "",
             }))
           : [
               {
@@ -68,7 +69,7 @@ const PortofolioForm = ({ params }: { params: { id: string } }) => {
   const handleChange = (
     index: number,
     event:
-      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
       | { target: { name: string; value: string } }
   ) => {
     const { name, value } = event.target;
@@ -117,18 +118,26 @@ const PortofolioForm = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const result = await addPortofolioToResume(params.id, data.portofolio);
+      // Convert dates back to ISO format before saving
+      const formattedData = {
+        portofolio: data.portofolio.map((porto) => ({
+          ...porto,
+          startDate: formatDateToISO(porto.startDate),
+          endDate: formatDateToISO(porto.endDate),
+        })),
+      };
+      const result = await addPortofolioToResume(params.id, formattedData.portofolio);
       if (result.success) {
         loadResumeData();
         toast({
           title: "Information saved.",
-          description: "Portofolio details updated successfully.",
+          description: "Portfolio details updated successfully.",
           className: "bg-white",
         });
         handleInputChange({
           target: {
             name: "portofolio",
-            value: data.portofolio,
+            value: formattedData.portofolio,
           },
         });
       }
@@ -143,10 +152,10 @@ const PortofolioForm = ({ params }: { params: { id: string } }) => {
     <div>
       <div className="p-5 shadow-lg rounded-lg border-t-primary-700 border-t-4 bg-white">
         <h2 className="text-lg font-semibold leading-none tracking-tight">
-          Portofolio
+          Portfolio
         </h2>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Add your portofolio details
+          Add your portfolio details
         </p>
 
         <Form {...form}>
@@ -224,7 +233,7 @@ const PortofolioForm = ({ params }: { params: { id: string } }) => {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
+                    <Loader2 size={20} className="animate-spin" /> Saving
                   </>
                 ) : (
                   "Save"
