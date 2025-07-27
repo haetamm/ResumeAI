@@ -66,7 +66,7 @@ export const formatDate = (date: string | null) => {
 
 export const formatDateToInput = (isoDate: string | undefined): string => {
   if (!isoDate) return "";
-  return isoDate.split("T")[0]; // Converts "2025-05-14T00:00:00.000Z" to "2025-05-14"
+  return isoDate.split("T")[0];
 };
 
 export const formatDateToISO = (date: string | undefined): string => {

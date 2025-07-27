@@ -1,6 +1,6 @@
 import { useFormContext } from "@/lib/context/FormProvider";
 import { themeColors } from "@/lib/utils";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import EducationPreview from "./previews/th/EducationPreview";
 import { usePathname } from "next/navigation";
 import PersonalDetailPreview from "./previews/th/PersonalDetailPreview";
@@ -12,8 +12,16 @@ import SocmedPreview from "./previews/th/SocmedPreview";
 import { QRCodeSVG } from "qrcode.react";
 
 const ThResumePreview = ({ view = false }) => {
-  const { formData, setActiveFormIndex, loading } = useFormContext();
+  const { formData, setActiveFormIndex } = useFormContext();
   const pathname = usePathname();
+  
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (formData && Object.keys(formData).length > 0) {
+      setLoading(false); 
+    }
+  }, [formData]);
 
   const isEditMode = pathname.endsWith("/edit");
   const interactiveClass = isEditMode
@@ -21,44 +29,16 @@ const ThResumePreview = ({ view = false }) => {
     : "";
 
   const sections = [
-    {
-      index: 1,
-      component: <PersonalDetailPreview />,
-      condition: true,
-    },
-    {
-      index: 8,
-      component: <SocmedPreview />,
-      condition: formData?.socmed?.length > 0,
-    },
-    {
-      index: 4,
-      component: <EducationPreview />,
-      condition: formData?.education?.length > 0,
-    },
-    {
-      index: 7,
-      component: <SkillsPreview />,
-      condition: formData?.skills?.length > 0,
-    },
-    {
-      index: 3,
-      component: <ExperiencePreview />,
-      condition: formData?.experience?.length > 0,
-    },
-    {
-      index: 5,
-      component: <CertificatePreview />,
-      condition: formData?.certificate?.length > 0,
-    },
-    {
-      index: 6,
-      component: <PortofolioPreview />,
-      condition: formData?.portofolio?.length > 0,
-    },
+    { index: 1, component: <PersonalDetailPreview />, condition: true },
+    { index: 8, component: <SocmedPreview />, condition: formData?.socmed?.length > 0 },
+    { index: 4, component: <EducationPreview />, condition: formData?.education?.length > 0 },
+    { index: 7, component: <SkillsPreview />, condition: formData?.skills?.length > 0 },
+    { index: 3, component: <ExperiencePreview />, condition: formData?.experience?.length > 0 },
+    { index: 5, component: <CertificatePreview />, condition: formData?.certificate?.length > 0 },
+    { index: 6, component: <PortofolioPreview />, condition: formData?.portofolio?.length > 0 },
   ];
 
-  if (Object.keys(formData || {}).length === 0 || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center">
         <div className="w-full min-h-[297mm] rounded-sm shadow-lg skeleton" />
@@ -70,15 +50,13 @@ const ThResumePreview = ({ view = false }) => {
     <div
       className={`${
         view ? "text-xl" : "max-[1439px]:text-sm"
-      } flex items-center min-w-[490px] md:min-w-0 justify-center mb-10 `}
+      } flex items-center min-w-[490px] md:min-w-0 justify-center mb-10`}
     >
       <div className="flex flex-row bg-white shadow-lg mx-auto md:w-full min-h-[297mm] font-cambria">
         {/* Left Section */}
         <div className={` ${view ? "px-4" : "px-2"} w-[70%] py-10`}>
           <h1
-            style={{
-              color: formData?.themeColor || themeColors[0],
-            }}
+            style={{ color: formData?.themeColor || themeColors[0] }}
             className="text-3xl !font-bold text-center mb-4"
           >
             RESUME
@@ -118,7 +96,6 @@ const ThResumePreview = ({ view = false }) => {
                   size={formData.id ? 200 : 130}
                   bgColor="transparent"
                   fgColor="#ffffff"
-                  className=""
                 />
               </div>
               <p className="text-center mt-2">Scan to see profile photo</p>

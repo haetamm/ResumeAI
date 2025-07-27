@@ -4,8 +4,8 @@ const certificateSchema = new mongoose.Schema({
   name: { type: String },
   issuedBy: { type: String },
   link: { type: String },
-  startDate: { type: String },
-  endDate: { type: String },
+  startDate: { type: Date },
+  endDate: { type: Date },
 });
 
 const Certificate =

@@ -17,6 +17,7 @@ import { useFormContext } from "@/lib/context/FormProvider";
 import { certificationFields } from "@/lib/fields";
 import { useCheckOffline } from "@/lib/hooks/useCheckOffline";
 import { useHandleError } from "@/lib/hooks/useHandleError";
+import { formatDateToInput, formatDateToISO } from "@/lib/utils";
 import { CertificateValidationSchema } from "@/lib/validations/resume";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -42,8 +43,8 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
               name: cert.name || "",
               issuedBy: cert.issuedBy || "",
               link: cert.link || "",
-              startDate: cert.startDate || "",
-              endDate: cert.endDate || "",
+              startDate: formatDateToInput(cert.startDate) || "",
+              endDate: formatDateToInput(cert.endDate) || "",
             }))
           : [
               {
@@ -57,7 +58,7 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, prepend, remove } = useFieldArray({
     control: form.control,
     name: "certificate",
   });
@@ -87,7 +88,7 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
       startDate: "",
       endDate: "",
     };
-    append(newEntry);
+    prepend(newEntry);
     const newEntries = [...form.getValues("certificate"), newEntry];
     handleInputChange({
       target: {
@@ -113,7 +114,15 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const result = await addCertificateToResume(params.id, data.certificate);
+      // Convert dates back to ISO format before saving
+      const formattedData = {
+        certificate: data.certificate.map((cert) => ({
+          ...cert,
+          startDate: formatDateToISO(cert.startDate),
+          endDate: formatDateToISO(cert.endDate),
+        })),
+      };
+      const result = await addCertificateToResume(params.id, formattedData.certificate);
       if (result.success) {
         loadResumeData();
         toast({
@@ -147,6 +156,26 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSave)} className="mt-5">
+            <div className="mt-3 flex gap-2 justify-between">
+              <ActionButtons
+                onAdd={AddNewCertificate}
+                onRemove={RemoveCertificate}
+                fieldCount={fields.length}
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
+                className="bg-primary-700 hover:bg-primary-800 text-white"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </div>
             {fields.map((item, index) => (
               <div
                 key={item.id}
@@ -189,26 +218,7 @@ const CertificateForm = ({ params }: { params: { id: string } }) => {
                 ))}
               </div>
             ))}
-            <div className="mt-3 flex gap-2 justify-between">
-              <ActionButtons
-                onAdd={AddNewCertificate}
-                onRemove={RemoveCertificate}
-                fieldCount={fields.length}
-              />
-              <Button
-                type="submit"
-                disabled={isLoading || !form.formState.isValid}
-                className="bg-primary-700 hover:bg-primary-800 text-white"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </div>
+     
           </form>
         </Form>
       </div>

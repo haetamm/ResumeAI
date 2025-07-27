@@ -52,14 +52,17 @@ export async function fetchResume(resumeId: string) {
       .populate({
         path: "experience",
         model: Experience,
+        options: { sort: { startDate: -1 } }, 
       })
       .populate({
         path: "education",
         model: Education,
+        options: { sort: { startDate: -1 } }, 
       })
       .populate({
         path: "certificate",
         model: Certificate,
+        options: { sort: { startDate: -1 } }, 
       })
       .populate({
         path: "portofolio",

@@ -5,8 +5,8 @@ const experienceSchema = new mongoose.Schema({
   companyName: { type: String },
   city: { type: String },
   state: { type: String },
-  startDate: { type: String },
-  endDate: { type: String },
+  startDate: { type: Date },
+  endDate: { type: Date },
   workSummary: { type: String },
 });
 

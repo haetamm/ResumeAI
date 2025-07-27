@@ -24,7 +24,7 @@ export const ActionButtons = ({
       </Button>
       <Button
         variant="outline"
-        onClick={() => onRemove(fieldCount - 1)}
+        onClick={() => onRemove(0)} 
         className="text-primary"
         type="button"
         disabled={fieldCount <= 0}

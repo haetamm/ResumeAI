@@ -7,11 +7,13 @@ import { useToast } from "@/components/ui/use-toast";
 import { generateExperienceDescription } from "@/lib/actions/gemini.actions";
 import { addExperienceToResume } from "@/lib/actions/resume.actions";
 import { useFormContext } from "@/lib/context/FormProvider";
-import { Brain, Loader2, Minus, Plus } from "lucide-react";
+import { Brain, Loader2 } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { formatDateToInput, formatDateToISO } from "@/lib/utils";
+
 import {
   Form,
   FormControl,
@@ -51,8 +53,8 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
               companyName: exp.companyName || "",
               city: exp.city || "",
               state: exp.state || "",
-              startDate: exp.startDate || "",
-              endDate: exp.endDate || "",
+              startDate: formatDateToInput(exp.startDate) || "",
+              endDate: formatDateToInput(exp.endDate) || "",
               workSummary: exp.workSummary || "",
             }))
           : [
@@ -69,7 +71,7 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, prepend, remove } = useFieldArray({
     control: form.control,
     name: "experience",
   });
@@ -101,7 +103,7 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
       endDate: "",
       workSummary: "",
     };
-    append(newEntry);
+    prepend(newEntry);
     const newEntries = [...form.getValues("experience"), newEntry];
     handleInputChange({
       target: {
@@ -161,7 +163,14 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
 
     setIsLoading(true);
     try {
-      const result = await addExperienceToResume(params.id, data.experience);
+       const formattedData = {
+        experience: data.experience.map((exp) => ({
+          ...exp,
+          startDate: formatDateToISO(exp.startDate),
+          endDate: formatDateToISO(exp.endDate),
+        })),
+      };
+      const result = await addExperienceToResume(params.id, formattedData.experience);
 
       if (result.success) {
         loadResumeData();
@@ -196,6 +205,26 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSave)} className="mt-5">
+            <div className="mb-5 flex gap-2 justify-between">
+              <ActionButtons
+                onAdd={AddNewExperience}
+                onRemove={RemoveExperience}
+                fieldCount={fields.length}
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
+                className="bg-primary-700 hover:bg-primary-800 text-white"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </div>
             {fields.map((item, index) => (
               <div
                 key={item.id}
@@ -273,26 +302,7 @@ const ExperienceForm = ({ params }: { params: { id: string } }) => {
                 ))}
               </div>
             ))}
-            <div className="mt-3 flex gap-2 justify-between">
-              <ActionButtons
-                onAdd={AddNewExperience}
-                onRemove={RemoveExperience}
-                fieldCount={fields.length}
-              />
-              <Button
-                type="submit"
-                disabled={isLoading || !form.formState.isValid}
-                className="bg-primary-700 hover:bg-primary-800 text-white"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </div>
+     
           </form>
         </Form>
       </div>

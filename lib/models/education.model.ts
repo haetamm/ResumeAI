@@ -4,8 +4,8 @@ const educationSchema = new mongoose.Schema({
   universityName: { type: String },
   degree: { type: String },
   major: { type: String },
-  startDate: { type: String },
-  endDate: { type: String },
+  startDate: { type: Date },
+  endDate: { type: Date },
   description: { type: String },
 });
 

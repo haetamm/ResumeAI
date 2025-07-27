@@ -51,7 +51,7 @@ const SocmedForm = ({ params }: { params: { id: string } }) => {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, prepend, remove } = useFieldArray({
     control: form.control,
     name: "socmed",
   });
@@ -78,7 +78,7 @@ const SocmedForm = ({ params }: { params: { id: string } }) => {
       name: "",
       link: "",
     };
-    append(newEntry);
+    prepend(newEntry);
     const newEntries = [...form.getValues("socmed"), newEntry];
     handleInputChange({
       target: {
@@ -138,6 +138,26 @@ const SocmedForm = ({ params }: { params: { id: string } }) => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSave)} className="mt-5">
+            <div className="mb-5 flex gap-2 justify-between">
+              <ActionButtons
+                onAdd={AddNewSocmed}
+                onRemove={RemoveSocmed}
+                fieldCount={fields.length}
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !form.formState.isValid}
+                className="bg-primary-700 hover:bg-primary-800 text-white"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
+                  </>
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </div>
             {fields.map((item, index) => (
               <div
                 key={item.id}
@@ -180,26 +200,6 @@ const SocmedForm = ({ params }: { params: { id: string } }) => {
                 ))}
               </div>
             ))}
-            <div className="mt-3 flex gap-2 justify-between">
-              <ActionButtons
-                onAdd={AddNewSocmed}
-                onRemove={RemoveSocmed}
-                fieldCount={fields.length}
-              />
-              <Button
-                type="submit"
-                disabled={isLoading || !form.formState.isValid}
-                className="bg-primary-700 hover:bg-primary-800 text-white"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={20} className="animate-spin" /> &nbsp; Saving
-                  </>
-                ) : (
-                  "Save"
-                )}
-              </Button>
-            </div>
           </form>
         </Form>
       </div>
