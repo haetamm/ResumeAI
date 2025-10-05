@@ -48,9 +48,29 @@ export async function POST(request: Request) {
         break;
     }
 
+    // 🌐 Ambil file template dengan cara kompatibel (lokal & Netlify)
+    let content: Buffer;
     const templatePath = path.join(process.cwd(), 'public', templateFileName);
-    if (!fs.existsSync(templatePath)) {
-      throw new Error(`Template file not found: ${templateFileName}`);
+
+    if (fs.existsSync(templatePath)) {
+      // 🧩 Jalan lokal → baca langsung dari file
+      content = fs.readFileSync(templatePath);
+    } else {
+      // 🌍 Jalan di Netlify/Vercel → fetch dari URL publik
+      const baseUrl =
+        process.env.NEXT_PUBLIC_URL ||
+        (process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : 'http://localhost:3000');
+      const templateUrl = `${baseUrl}/${templateFileName}`;
+      const response = await fetch(templateUrl);
+
+      if (!response.ok) {
+        throw new Error(`Template file not found: ${templateFileName}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      content = Buffer.from(arrayBuffer);
     }
 
     const qrColor =
@@ -64,9 +84,7 @@ export async function POST(request: Request) {
       color: qrColor,
     });
 
-
     // 📄 Baca file DOCX & siapkan modul image
-    const content = fs.readFileSync(templatePath);
     const zip = new PizZip(content);
     const imageModule = new ImageModule({
       centered: false,
