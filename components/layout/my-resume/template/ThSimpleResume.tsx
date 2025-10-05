@@ -49,9 +49,9 @@ const ThSimpleResumePreview = ({ view = false }) => {
     <div
       className={`${
         view ? "text-xl" : "max-[1439px]:text-sm"
-      } items-center min-w-[450px] bg-white md:min-w-0 justify-center mb-10`}
+      } items-center min-w-[490px] bg-white md:min-w-0 justify-center mb-10`}
       >
-          <div className={`${view ? "xs:px-5" : "px-4"} bg-white shadow-lg mx-auto md:w-full min-h-[297mm] font-bahnschrift `}>
+          <div className={`${view ? "px-2 xs:px-5" : "px-4"} bg-white shadow-lg mx-auto md:w-full min-h-[297mm] font-bahnschrift `}>
             <div className={` ${view ? "px-2 xs:px-4" : "px-2"}`} >
                 <PersonalDetailPreview />
               </div>
