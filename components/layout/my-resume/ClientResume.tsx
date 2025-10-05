@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import FinalResumeView from "@/components/layout/ResumeView";
+import ResumeView from "@/components/layout/ResumeView";
 import { checkResumeOwnership } from "@/lib/actions/resume.actions";
 import { getFromDB } from "@/lib/indexedDB";
 
@@ -33,7 +33,7 @@ const ClientResume = ({ params, serverUserId }: ClientResumeProps) => {
 
   return (
     <>
-      <FinalResumeView isOwnerView={isResumeOwner} />
+      <ResumeView isOwnerView={isResumeOwner} />
     </>
   );
 };

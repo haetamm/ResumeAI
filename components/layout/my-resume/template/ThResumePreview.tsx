@@ -1,14 +1,14 @@
 import { useFormContext } from "@/lib/context/FormProvider";
 import { themeColors } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
-import EducationPreview from "./previews/th/EducationPreview";
+import EducationPreview from "../previews/th/EducationPreview";
 import { usePathname } from "next/navigation";
-import PersonalDetailPreview from "./previews/th/PersonalDetailPreview";
-import SkillsPreview from "./previews/th/SkillsPreview";
-import ExperiencePreview from "./previews/th/ExperiencePreview";
-import CertificatePreview from "./previews/th/CertificatePreview";
-import PortofolioPreview from "./previews/th/PortofolioPreview";
-import SocmedPreview from "./previews/th/SocmedPreview";
+import PersonalDetailPreview from "../previews/th/PersonalDetailPreview";
+import SkillsPreview from "../previews/th/SkillsPreview";
+import ExperiencePreview from "../previews/th/ExperiencePreview";
+import CertificatePreview from "../previews/th/CertificatePreview";
+import PortofolioPreview from "../previews/th/PortofolioPreview";
+import SocmedPreview from "../previews/th/SocmedPreview";
 import { QRCodeSVG } from "qrcode.react";
 
 const ThResumePreview = ({ view = false }) => {

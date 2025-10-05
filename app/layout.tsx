@@ -16,6 +16,11 @@ const cambria = localFont({
   variable: "--font-cambria",
 });
 
+const bahnschrift = localFont({
+  src: "../public/fonts/Bahnschrift.ttf",
+  variable: "--font-bahnschrift",
+});
+
 export const metadata: Metadata = {
   title: "ResumeAI - Professional AI Resume Builder",
   description:
@@ -46,7 +51,7 @@ export default function RootLayout({
           <meta name="theme-color" content="#1D4ED8" />
         </head>
         <body
-          className={`${inter.variable} ${nunito.variable} ${cambria.variable} font-inter`}
+          className={`${inter.variable} ${nunito.variable} ${cambria.variable} ${bahnschrift.variable} font-inter`}
         >
           <OnlineStatusProvider />
           <Providers>{children}</Providers>

@@ -32,30 +32,46 @@ export async function POST(request: Request) {
       certificate = [],
       portofolio = [],
       socmed = [],
+      layout,
     } = await request.json();
+
+    let templateFileName = 'template.docx';
+    switch (layout) {
+      case 'th':
+        templateFileName = 'template-th.docx';
+        break;
+      case 'th-simple':
+        templateFileName = 'template-th-simple.docx';
+        break;
+      default:
+        console.warn('⚠️ Layout tidak dikenali, gunakan template default.docx');
+        break;
+    }
+
+    const templatePath = path.join(process.cwd(), 'public', templateFileName);
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template file not found: ${templateFileName}`);
+    }
+
+    const qrColor =
+      layout === 'th-simple'
+        ? { dark: '#000000', light: '#FFFFFF' }
+        : { dark: '#FFFFFF', light: '#00000000' };
 
     const qrCodeBuffer = await QRCode.toBuffer(qrCodeUrl, {
       type: 'png',
       width: 170,
-      color: {
-        dark: '#FFFFFF',
-        light: '#00000000', 
-      },
+      color: qrColor,
     });
 
-    const templatePath = path.join(process.cwd(), 'public', 'template.docx');
-    if (!fs.existsSync(templatePath)) {
-      throw new Error('Template file not found');
-    }
+
+    // 📄 Baca file DOCX & siapkan modul image
     const content = fs.readFileSync(templatePath);
     const zip = new PizZip(content);
-
     const imageModule = new ImageModule({
       centered: false,
       getImage: (tagValue: string, tagName: string) => {
-        if (tagName === 'qrCode') {
-          return qrCodeBuffer;
-        }
+        if (tagName === 'qrCode') return qrCodeBuffer;
         return null;
       },
       getSize: () => [170, 170],
@@ -91,7 +107,7 @@ export async function POST(request: Request) {
       startDate: getMonthAndYear(port.startDate || ''),
       endDate: getMonthAndYear(port.endDate || ''),
       sourceCode: port.sourceCode || '-',
-      preview: port.preview || '-'
+      preview: port.preview || '-',
     }));
 
     const typedSkills: Skill[] = skills;
@@ -103,17 +119,16 @@ export async function POST(request: Request) {
     const hasPortofolio = processedPortofolio.length > 0;
 
     const numColumns = 3;
-    const skillsColumns: { column1: Skill[]; column2: Skill[]; column3: Skill[] } = {
-      column1: [],
-      column2: [],
-      column3: [],
+    const skillsColumns = {
+      column1: [] as Skill[],
+      column2: [] as Skill[],
+      column3: [] as Skill[],
     };
-    typedSkills.forEach((skill: Skill, index: number) => {
-      const row = Math.floor(index / numColumns);
+    typedSkills.forEach((skill, index) => {
       const col = index % numColumns;
-      if (col === 0) skillsColumns.column1[row] = skill;
-      else if (col === 1) skillsColumns.column2[row] = skill;
-      else if (col === 2) skillsColumns.column3[row] = skill;
+      if (col === 0) skillsColumns.column1.push(skill);
+      else if (col === 1) skillsColumns.column2.push(skill);
+      else skillsColumns.column3.push(skill);
     });
 
     doc.setData({
@@ -146,14 +161,18 @@ export async function POST(request: Request) {
 
     const buf = doc.getZip().generate({ type: 'nodebuffer' });
 
-    return new NextResponse(buf, {
+    return new NextResponse(new Uint8Array(buf), {
       headers: {
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'Content-Disposition': 'attachment; filename=resume.docx',
       },
     });
   } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json({ error: 'Failed to generate Word', details: error }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to generate Word', details: (error as Error).message },
+      { status: 500 }
+    );
   }
 }

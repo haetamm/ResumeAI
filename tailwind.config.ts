@@ -18,6 +18,9 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        xs: "500px",
+      },
       colors: {
         primary: {
           "50": "#eff6ff",
@@ -56,6 +59,7 @@ const config = {
         inter: "var(--font-inter)",
         nunito: "var(--font-nunito)",
         cambria: "var(--font-cambria)",
+        bahnschrift: "var(--font-bahnschrift)",
         body: [
           "Inter",
           "ui-sans-serif",

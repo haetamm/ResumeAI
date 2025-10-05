@@ -23,6 +23,7 @@ const resumeSchema = new mongoose.Schema({
   portofolio: [{ type: mongoose.Schema.Types.ObjectId, ref: "Portofolio" }],
   socmed: [{ type: mongoose.Schema.Types.ObjectId, ref: "Socmed" }],
   themeColor: { type: String, default: themeColors[0] },
+  layout: { type: String, default: "th" },
 });
 
 const Resume = mongoose.models.Resume || mongoose.model("Resume", resumeSchema);

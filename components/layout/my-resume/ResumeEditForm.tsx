@@ -15,6 +15,7 @@ import { useFormContext } from "@/lib/context/FormProvider";
 import CertificateForm from "./forms/CertificateForm";
 import PortofolioForm from "./forms/PortofolioForm";
 import SocmedForm from "./forms/SocmedForm";
+import LayoutSelector from "../LayoutSelector";
 
 const ResumeEditForm = ({
   params,
@@ -34,7 +35,8 @@ const ResumeEditForm = ({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex justify-between">
-        <ThemeColor params={params} />
+        {/* <ThemeColor params={params} /> */}
+        <LayoutSelector params={params}/>
         <div className="flex gap-2">
           {activeFormIndex > 1 && (
             <Button

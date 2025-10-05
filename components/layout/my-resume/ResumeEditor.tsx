@@ -1,10 +1,32 @@
 "use client";
 
-import { FormProvider } from "@/lib/context/FormProvider";
+import { FormProvider, useFormContext } from "@/lib/context/FormProvider";
 import React from "react";
 import ResumeEditForm from "./ResumeEditForm";
-import MhResumePreview from "./MhResumePreview";
-import ThResumePreview from "./ThResumePreview";
+import MhResumePreview from "./template/MhResumePreview";
+import ThResumePreview from "./template/ThResumePreview";
+import ThSimpleResumePreview from "./template/ThSimpleResume";
+
+const ResumePreviewContainer = () => {
+  const { formData } = useFormContext();
+
+  const renderResumePreview = () => {
+    switch (formData?.layout) {
+      case "th":
+        return <ThResumePreview />;
+      case "th-simple":
+        return <ThSimpleResumePreview view />;
+      default:
+        return <ThResumePreview />;
+    }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto no-scrollbar overflow-x-auto p-1">
+      {renderResumePreview()}
+    </div>
+  );
+};
 
 const ResumeEditor = ({
   params,
@@ -13,9 +35,7 @@ const ResumeEditor = ({
   params: { id: string };
   userId: string | undefined;
 }) => {
-  if (!userId) {
-    return null;
-  }
+  if (!userId) return null;
 
   return (
     <FormProvider params={params}>
@@ -24,9 +44,7 @@ const ResumeEditor = ({
           <div className="h-full overflow-y-auto no-scrollbar p-1">
             <ResumeEditForm params={params} userId={userId} />
           </div>
-          <div className="h-full overflow-y-auto no-scrollbar overflow-x-auto  p-1 ">
-            <ThResumePreview />
-          </div>
+          <ResumePreviewContainer />
         </div>
       </div>
     </FormProvider>

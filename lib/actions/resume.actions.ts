@@ -136,6 +136,7 @@ export async function updateResume({
     imageUrl: string,
     summary: string;
     themeColor: string;
+    layout: string;
   }>;
 }) {
   try {

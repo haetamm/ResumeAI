@@ -2,11 +2,11 @@
 
 import React from "react";
 import { useFormContext } from "@/lib/context/FormProvider";
-import PersonalDetailsPreview from "./previews/mh/PersonalDetailsPreview";
-import SkillsPreview from "./previews/mh/SkillsPreview";
-import SummaryPreview from "./previews/mh/SummaryPreview";
-import ExperiencePreview from "./previews/mh/ExperiencePreview";
-import EducationalPreview from "./previews/mh/EducationalPreview";
+import PersonalDetailsPreview from "../previews/mh/PersonalDetailsPreview";
+import SkillsPreview from "../previews/mh/SkillsPreview";
+import SummaryPreview from "../previews/mh/SummaryPreview";
+import ExperiencePreview from "../previews/mh/ExperiencePreview";
+import EducationalPreview from "../previews/mh/EducationalPreview";
 import { themeColors } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 

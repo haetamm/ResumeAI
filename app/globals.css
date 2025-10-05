@@ -171,7 +171,8 @@
   margin-bottom: 20px;
   border-width: 1px 1px 1px 10px;
   border-style: solid;
-  border-color: rgb(191, 22, 80) rgb(191, 22, 80) rgb(191, 22, 80) rgb(236, 89, 144);
+  border-color: rgb(191, 22, 80) rgb(191, 22, 80) rgb(191, 22, 80)
+    rgb(236, 89, 144);
   border-image: initial;
   background: rgb(251, 236, 242);
 }
@@ -209,7 +210,7 @@
 }
 
 .btn-gradient::after {
-  content: "Theme";
+  content: "Layout";
   position: absolute;
   background-color: #edeef3;
   width: 96%;
