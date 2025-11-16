@@ -12,19 +12,50 @@ export async function generateMetadata({
   const data = await fetchResume(params.id);
   const resume = JSON.parse(data || "{}");
 
-  if (!resume?.firstName && !resume?.lastName) {
-    return {
-      title: "ResumeAI - Professional AI Resume Builder",
-      description:
-        "Generate a polished, professional resume in just a few clicks with our AI-powered resume builder.",
-    };
-  }
+  const fullName = `${resume.firstName ?? ""} ${resume.lastName ?? ""}`.trim();
+  const defaultTitle = "ResumeAI - Professional AI Resume Builder";
+  const defaultDescription =
+    "Generate a polished, professional resume in just a few clicks with our AI-powered resume builder.";
+
+  const title = fullName ? `${fullName} - ResumeAI` : defaultTitle;
+  const description = fullName
+    ? `${fullName}'s Resume. Powered by ResumeAI.`
+    : defaultDescription;
+
+  const url = `${process.env.NEXT_PUBLIC_APP_URL}/my-resume/${params.id}/view`;
+
+  const imageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/img/og-image.png`;
 
   return {
-    title: `${resume.firstName ?? ""} ${resume.lastName ?? ""} - ResumeAI`,
-    description: `${resume.firstName ?? ""} ${
-      resume.lastName ?? ""
-    }'s Resume. Powered by ResumeAI.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "ResumeAI",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${fullName}'s Resume Preview`,
+        },
+      ],
+      locale: "en_US",
+      type: "website",
+    },
+    // === Twitter / X ===
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+      creator: "@ResumeAI",
+    },
+    icons: {
+      icon: "/icons/favicon.ico",
+    },
   };
 }
 
