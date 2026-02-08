@@ -9,7 +9,7 @@ const EducationPreview = () => {
             <p className='text-lg xs:text-2xl font-bold'>PENDIDIKAN</p>
             {formData?.education.map(
             ({ degree, universityName, endDate }: any, index: number) => (
-                <div key={index} className="mb- text-sm xs:text-[15px]">
+                <div key={index} className="mb-2 text-sm xs:text-[15px]">
                     <p>{degree}</p>
                     <p>{universityName}</p>
                     <p>{endDate ? getYear(endDate) : "Aktif"}</p>

@@ -41,6 +41,13 @@ export const getYear = (date: string | null) => {
   return new Date(date).getFullYear();
 };
 
+export const getEndYear = (date: string | null) => {
+  if (!date || isNaN(new Date(date).getTime())) {
+    return "Aktif";
+  }
+  return new Date(date).getFullYear();
+};
+
 export const getMonthAndYear = (date: string | null) => {
   if (!date || isNaN(new Date(date).getTime())) {
     return "-";

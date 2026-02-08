@@ -120,7 +120,7 @@ const Page = () => {
             </span>
             . All Rights Reserved.
           </span>
-          <Link href="https://github.com/Mahmud0808" className="me-4 md:me-6">
+          <Link href="https://github.com/haetamm/pwa-resume-ai" className="me-4 md:me-6">
             <span className="hover:text-primary-500 mt-3 text-sm font-medium text-gray-500 sm:mt-0">
               Made with ❤️ by Mahmud
             </span>

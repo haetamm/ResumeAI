@@ -5,7 +5,7 @@ import ImageModule from 'docxtemplater-image-module-free';
 import QRCode from 'qrcode';
 import fs from 'fs';
 import path from 'path';
-import { formatDate, getMonthAndYear, getYear, stripHtml } from '@/lib/utils';
+import { formatDate, getEndYear, getMonthAndYear, getYear, stripHtml } from '@/lib/utils';
 
 interface Skill {
   name: string;
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     const processedEducation = education.map((edu: any) => ({
       ...edu,
       startDate: getYear(edu.startDate || ''),
-      endDate: getYear(edu.endDate || ''),
+      endDate: getEndYear(edu.endDate || ''),
     }));
 
     const processedCertificate = certificate.map((cer: any) => ({
